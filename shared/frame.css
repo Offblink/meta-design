@@ -1,0 +1,74 @@
+/* ============================================================
+   meta-design · demo page chrome
+   每个组件 demo 页共用的舞台：深色底 + 浏览器窗口壳 + 说明栏
+   注意：不做 * 通用 reset（unlayered 会压过 astryx.css 的 @layer）
+   ============================================================ */
+body{
+  margin:0;min-height:100vh;background:#0c0c10;color:#e8e8ee;
+  font-family:-apple-system,"SF Pro Text","Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  padding:36px 36px 60px;
+  display:flex;flex-direction:column;align-items:center;gap:22px;
+}
+
+/* 页头 */
+.demo-head{width:100%;max-width:1240px;display:flex;flex-direction:column;gap:10px}
+.tags{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tag{font-size:12px;padding:4px 10px;border-radius:999px;background:#1b1b24;border:1px solid #2c2c3a;color:#a9a4ff}
+.tag.alt{border-color:#5a4a1a;color:#e8c56a}
+.demo-head h1{font-size:19px;font-weight:700;letter-spacing:.3px}
+.demo-head p{font-size:13px;color:#8f8f9e;max-width:900px;line-height:1.7}
+
+/* 主题 / 明暗切换条（frame.js 注入 [data-prefs]） */
+.prefs{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.pill{
+  font-size:12px;padding:5px 13px;border-radius:999px;cursor:pointer;
+  background:#15151d;border:1px solid #2c2c3a;color:#a9a9b8;
+  font-family:inherit;transition:border-color .15s,color .15s,background .15s;
+}
+.pill:hover{border-color:#3a3a4d;color:#e8e8ee}
+.pill.on{background:#25254a;border-color:#5a5af0;color:#c9c9ff}
+.prefs .sep{width:1px;height:18px;background:#2c2c3a;margin:0 5px}
+
+/* 舞台：窗口壳 + 说明并排 */
+.stage{display:flex;gap:36px;align-items:flex-start;flex-wrap:wrap;justify-content:center;width:100%;max-width:1240px}
+
+/* 浏览器窗口壳 */
+.window{
+  flex:1 1 640px;max-width:900px;min-width:320px;border-radius:14px;overflow:hidden;
+  background:#17171d;box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 0 1px #2c2c3a;
+}
+.titlebar{display:flex;align-items:center;gap:7px;padding:10px 14px;background:#15151d;border-bottom:1px solid #262633}
+.titlebar .dot{width:11px;height:11px;border-radius:999px}
+.titlebar .url{
+  margin-left:8px;flex:1;font-size:11.5px;color:#7d7d8f;font-family:Consolas,monospace;
+  background:#0f0f14;border:1px solid #262633;border-radius:6px;padding:3px 12px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+/* Astryx 应用表面：全部走主题 token，随 data-theme / data-astryx-theme 变化 */
+.surface{
+  padding:30px;min-height:420px;
+  background:var(--color-background-body);color:var(--color-text-primary);
+  font-family:var(--font-family-body);font-size:14px;line-height:1.6;
+  display:flex;flex-direction:column;gap:22px;
+}
+
+/* 说明栏 */
+.notes{max-width:380px;font-size:13px;line-height:1.75;color:#b9b9c6;padding-top:6px}
+.notes h2{font-size:15px;color:#fff;margin:16px 0 6px}
+.notes h2:first-child{margin-top:0}
+.notes ul{padding-left:18px}
+.notes li{margin-bottom:4px}
+.notes b{color:#e8e8ee}
+.notes .never{color:#ff9b8a}
+.notes code,.notes kbd{background:#1b1b24;border:1px solid #2c2c3a;border-radius:4px;padding:1px 5px;font-size:11.5px;font-family:Consolas,monospace}
+.notes a{color:#8fd0ff}
+
+/* 返回总览 */
+.home{font-size:12.5px;color:#7d7d8f;text-decoration:none}
+.home:hover{color:#c9c9d6}
+
+/* demo 页内小节标题（surface 里用） */
+.sec{display:flex;flex-direction:column;gap:10px}
+.sec > .cap{font-size:12px;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}

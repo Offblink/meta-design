@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-astryx-theme="neutral" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>文本 Text · meta-design</title>
+<script>try{var s=JSON.parse(localStorage.getItem('meta-design')||'null');if(s){if(s.theme)document.documentElement.setAttribute('data-astryx-theme',s.theme);if(s.mode==='light'||s.mode==='dark')document.documentElement.setAttribute('data-theme',s.mode);else document.documentElement.removeAttribute('data-theme');}}catch(e){}</script>
+<link rel="stylesheet" href="../../vendor/fonts.css">
+<link rel="stylesheet" href="../../vendor/reset.css">
+<link rel="stylesheet" href="../../vendor/astryx.css">
+<link rel="stylesheet" href="../../vendor/themes/neutral.css">
+<link rel="stylesheet" href="../../vendor/themes/butter.css">
+<link rel="stylesheet" href="../../vendor/themes/chocolate.css">
+<link rel="stylesheet" href="../../vendor/themes/matcha.css">
+<link rel="stylesheet" href="../../vendor/themes/stone.css">
+<link rel="stylesheet" href="../../vendor/themes/gothic.css">
+<link rel="stylesheet" href="../../vendor/themes/y2k.css">
+<link rel="stylesheet" href="../../shared/frame.css">
+<style>
+  .trow{display:flex;flex-direction:column;gap:4px;padding-bottom:10px;
+    border-bottom:1px dashed var(--color-border)}
+  .trow:last-child{border-bottom:none;padding-bottom:0}
+  .trow .cap{font-size:11.5px;color:var(--color-text-secondary);font-family:Consolas,monospace}
+  .tstack{display:flex;flex-direction:column;gap:10px}
+</style>
+</head>
+<body>
+
+<header class="demo-head">
+  <div class="tags">
+    <a class="home" href="../../index.html">← 总览</a>
+    <span class="tag">display</span>
+    <span class="tag alt">React 19 · Astryx 0.7.11</span>
+    <span class="tag">@astryxdesign/core/Text</span>
+  </div>
+  <h1>文本 Text</h1>
+  <p>排版层级一页看全：Heading 输出正确的 h1–h6 标题层级，Text 用语义 type 渲染正文 / 标签 / 辅助 / 代码，Blockquote 带出处引用，Link 做导航链接，Kbd 展示快捷键。字号字重颜色全由主题 token 决定，换主题即时生效。</p>
+  <div class="prefs" data-prefs></div>
+</header>
+
+<div class="stage">
+  <div class="window">
+    <div class="titlebar">
+      <span class="dot" style="background:#ff5f57"></span>
+      <span class="dot" style="background:#febc2e"></span>
+      <span class="dot" style="background:#28c840"></span>
+      <span class="url">meta-design · components/display/text.html</span>
+    </div>
+    <div class="surface" id="root"></div>
+  </div>
+
+  <aside class="notes">
+    <h2>什么时候用</h2>
+    <ul>
+      <li>正文、标签、辅助文字一律用 <code>Text</code> 的语义 <code>type</code>（body / large / label / supporting / code），尺寸字重交给主题。</li>
+      <li>标题用 <code>Heading</code> 的 <code>level</code> 1–6 输出正确的 h1–h6；视觉层级与文档层级不一致时补 <code>accessibilityLevel</code>。</li>
+      <li>长文本 <code>maxLines</code> 截断（hover 出 tooltip 不丢字），数字列开 <code>hasTabularNumbers</code> 对齐位数。</li>
+    </ul>
+    <h2>不要</h2>
+    <ul>
+      <li class="never">跳级使用标题（h1 之后直接 h3）—— 读屏的文档大纲会断。</li>
+      <li class="never">再手动覆盖与语义 type 重复的字号字重 —— 和主题打架，换主题就崩。</li>
+      <li class="never">用 Link 做不导航的「动作」（那是 Button），也不用「点这里」这种没有信息量的链接文案。</li>
+    </ul>
+    <h2>关键 props</h2>
+    <ul>
+      <li><code>Text</code>：<code>children</code> <b>必填</b> · <code>type</code> body / large / label / supporting / code / display-1~3 · <code>maxLines</code> · <code>hasTabularNumbers</code> · <code>color</code></li>
+      <li><code>Heading</code>：<code>level</code> 1–6 <b>必填</b> · <code>type</code> display-1~3 · <code>accessibilityLevel</code> · <code>maxLines</code></li>
+      <li><code>Blockquote</code>：<code>children</code> <b>必填</b> · <code>cite</code> 出处（渲染成 &lt;cite&gt;）</li>
+      <li><code>Link</code>：<code>href</code> · <code>hasUnderline</code> · <code>isStandalone</code> · <code>isExternalLink</code> · <code>isDisabled</code></li>
+      <li><code>Kbd</code>：<code>keys</code> <b>必填</b>，<code>+</code> 分隔，<code>mod</code> 自动跨平台</li>
+    </ul>
+  </aside>
+</div>
+
+<script src="../../vendor/astryx.js"></script>
+<script src="../../shared/frame.js"></script>
+<script>
+  const {React, ReactDOM, htm, Astryx, zhCN} = AstryxKit;
+  const html = htm.bind(React.createElement);
+  const {InternationalizationProvider, Text, Heading, Blockquote, Link, Kbd} = Astryx;
+
+  const TEXT_TYPES = [
+    {t: 'body', sample: '正文 body —— 默认的段落文字。'},
+    {t: 'large', sample: '大号 large —— 导语与重点段落。'},
+    {t: 'label', sample: '标签 label —— 表单项与控件名。'},
+    {t: 'supporting', sample: '辅助 supporting —— 次要说明与元数据。'},
+    {t: 'code', sample: '代码 code —— 行内字段名与命令。'},
+  ];
+
+  function Demo() {
+    return html`
+      <${InternationalizationProvider} locale="zh-CN" messages=${{'zh-CN': zhCN}}>
+        <div className="sec">
+          <span className="cap">Heading 标题层级（不跳级）</span>
+          <div className="tstack">
+            <div className="trow">
+              <${Heading} level=${2}>二级标题 level 2<//>
+              <span className="cap">&lt;h2&gt; · level={2}</span>
+            </div>
+            <div className="trow">
+              <${Heading} level=${3}>三级标题 level 3<//>
+              <span className="cap">&lt;h3&gt; · level={3}</span>
+            </div>
+            <div className="trow">
+              <${Heading} level=${4}>四级标题 level 4<//>
+              <span className="cap">&lt;h4&gt; · level={4}</span>
+            </div>
+            <div className="trow">
+              <${Heading} level=${2} type="display-2">展示型标题 display-2<//>
+              <span className="cap">level={2} type="display-2"</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">Text 语义类型</span>
+          <div className="tstack">
+            ${TEXT_TYPES.map(x => html`
+              <div className="trow" key=${x.t}>
+                <${Text} type=${x.t}>${x.sample}<//>
+                <span className="cap">type="${x.t}"</span>
+              </div>
+            `)}
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">Text 实用属性</span>
+          <div className="tstack">
+            <div className="trow">
+              <${Text} maxLines=${1}>这行文字被 maxLines 截断了：超长的标识符 po_1Q8ZK4X7M2N5P3R6T9V1W4YB 在窄容器里不会撑破布局，悬停可以看到完整内容。<//>
+              <span className="cap">maxLines={1}</span>
+            </div>
+            <div className="trow">
+              <${Text} type="body" hasTabularNumbers>42 · 118 · 902 · 231 · 76（hasTabularNumbers，竖排对齐）<//>
+              <span className="cap">hasTabularNumbers</span>
+            </div>
+            <div className="trow">
+              <${Text} type="body" color="secondary">color="secondary" 次要文字<//>
+              <span className="cap">color="secondary"</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">Blockquote 引用</span>
+          <${Blockquote} cite="原研哉《设计中的设计》">
+            设计不是一种技能，而是捕捉事物本质的感觉能力与洞察能力。
+          <//>
+        </div>
+
+        <div className="sec">
+          <span className="cap">Link 链接（演示统一用 href="#"）</span>
+          <div className="tstack">
+            <div className="trow">
+              <${Text}>默认链接：<${Link} href="#">查看组件文档<//><//>
+              <span className="cap">href="#"</span>
+            </div>
+            <div className="trow">
+              <${Link} href="#" hasUnderline>始终显示下划线的链接<//>
+              <span className="cap">hasUnderline</span>
+            </div>
+            <div className="trow">
+              <${Link} href="#" isStandalone>独立成行的链接（基础字号）<//>
+              <span className="cap">isStandalone</span>
+            </div>
+            <div className="trow">
+              <${Link} href="#" isExternalLink>带外部图标的链接<//>
+              <span className="cap">isExternalLink</span>
+            </div>
+            <div className="trow">
+              <${Link} href="#" isDisabled>禁用的链接<//>
+              <span className="cap">isDisabled</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">Kbd 快捷键</span>
+          <div className="tstack">
+            <${Text}>按 <${Kbd} keys="mod+k" /> 打开命令面板<//>
+            <${Text}>按 <${Kbd} keys="mod+shift+p" /> 切换主题，按 <${Kbd} keys="escape" /> 关闭<//>
+            <${Text}>按 <${Kbd} keys="shift+enter" /> 换行发送<//>
+          </div>
+          <${Text} type="supporting">Kbd 只负责显示与播报（mod 自动跨平台），按键监听写在你自己的代码里。<//>
+        </div>
+      <//>
+    `;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(html`<${Demo} />`);
+</script>
+
+</body>
+</html>

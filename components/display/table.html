@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-astryx-theme="neutral" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>表格 Table · meta-design</title>
+<script>try{var s=JSON.parse(localStorage.getItem('meta-design')||'null');if(s){if(s.theme)document.documentElement.setAttribute('data-astryx-theme',s.theme);if(s.mode==='light'||s.mode==='dark')document.documentElement.setAttribute('data-theme',s.mode);else document.documentElement.removeAttribute('data-theme');}}catch(e){}</script>
+<link rel="stylesheet" href="../../vendor/fonts.css">
+<link rel="stylesheet" href="../../vendor/reset.css">
+<link rel="stylesheet" href="../../vendor/astryx.css">
+<link rel="stylesheet" href="../../vendor/themes/neutral.css">
+<link rel="stylesheet" href="../../vendor/themes/butter.css">
+<link rel="stylesheet" href="../../vendor/themes/chocolate.css">
+<link rel="stylesheet" href="../../vendor/themes/matcha.css">
+<link rel="stylesheet" href="../../vendor/themes/stone.css">
+<link rel="stylesheet" href="../../vendor/themes/gothic.css">
+<link rel="stylesheet" href="../../vendor/themes/y2k.css">
+<link rel="stylesheet" href="../../shared/frame.css">
+<style>
+  .cell{display:inline-flex;gap:6px;align-items:center;vertical-align:middle}
+</style>
+</head>
+<body>
+
+<header class="demo-head">
+  <div class="tags">
+    <a class="home" href="../../index.html">← 总览</a>
+    <span class="tag">display</span>
+    <span class="tag alt">React 19 · Astryx 0.7.11</span>
+    <span class="tag">@astryxdesign/core/Table</span>
+  </div>
+  <h1>表格 Table</h1>
+  <p>结构一致的行列数据用表格呈现：5 条服务的示例数据跑两个表 —— 基础版展示 data + columns 数据驱动与富单元格（renderCell 组合 StatusDot），紧凑版叠加 density / dividers / isStriped / textOverflow，并用 proportional、pixel 声明列宽。列放不下时 Table 自己出横向滚动区。</p>
+  <div class="prefs" data-prefs></div>
+</header>
+
+<div class="stage">
+  <div class="window">
+    <div class="titlebar">
+      <span class="dot" style="background:#ff5f57"></span>
+      <span class="dot" style="background:#febc2e"></span>
+      <span class="dot" style="background:#28c840"></span>
+      <span class="url">meta-design · components/display/table.html</span>
+    </div>
+    <div class="surface" id="root"></div>
+  </div>
+
+  <aside class="notes">
+    <h2>什么时候用</h2>
+    <ul>
+      <li>列结构一致的数据集才用 Table；用 <code>density</code> 与 <code>dividers</code> 匹配信息密度和扫读需求。</li>
+      <li>富单元格用 <code>renderCell</code> 组合 Astryx 组件：状态列放 StatusDot / Badge，人名列放 Avatar。</li>
+      <li>列宽用 <code>proportional(n)</code> / <code>pixel(n)</code> 声明；列太多放不下时 Table 的滚动区自动接管横向滚动。</li>
+    </ul>
+    <h2>不要</h2>
+    <ul>
+      <li class="never">列结构不一致的数据别用表格 —— 换 List 或 Card 布局。</li>
+      <li class="never">一次开满所有插件（排序、选择、分页、列管理全上）—— 只加用得到的。</li>
+      <li class="never">长文本列只靠默认 60px 下限硬扛 —— 给它 <code>proportional(1, {minWidth})</code> 自己的下限。</li>
+    </ul>
+    <h2>关键 props</h2>
+    <ul>
+      <li><code>data</code> + <code>columns</code>：列定义 <code>{key, header, width?, align?, renderCell?}</code>，renderCell 收整行 item</li>
+      <li><code>idKey</code> 行键 · <code>density</code> compact / balanced / spacious · <code>dividers</code> rows / columns / grid / none</li>
+      <li><code>isStriped</code> · <code>hasHover</code> · <code>textOverflow</code> wrap / truncate</li>
+    </ul>
+  </aside>
+</div>
+
+<script src="../../vendor/astryx.js"></script>
+<script src="../../shared/frame.js"></script>
+<script>
+  const {React, ReactDOM, htm, Astryx, zhCN} = AstryxKit;
+  const html = htm.bind(React.createElement);
+  const {InternationalizationProvider, Table, StatusDot, Badge, Text, pixel, proportional} = Astryx;
+
+  const ROWS = [
+    {id: 'svc-1', service: 'gateway 边缘网关', status: '运行中', tone: 'success', owner: '周予', updated: '11-08 09:12', ms: 42},
+    {id: 'svc-2', service: 'auth-service', status: '需关注', tone: 'warning', owner: '林澈', updated: '11-08 08:47', ms: 118},
+    {id: 'svc-3', service: 'media-transcode', status: '已失败', tone: 'error', owner: '陈砚', updated: '11-07 23:05', ms: 902},
+    {id: 'svc-4', service: 'search-index', status: '运行中', tone: 'success', owner: '周予', updated: '11-07 21:30', ms: 76},
+    {id: 'svc-5', service: 'billing-sync', status: '已暂停', tone: 'neutral', owner: '苏晚', updated: '11-06 14:58', ms: 231},
+  ];
+
+  const COLS = [
+    {key: 'service', header: '服务'},
+    {
+      key: 'status', header: '状态', align: 'center',
+      renderCell: r => html`<span className="cell"><${StatusDot} variant=${r.tone} label=${r.status} /><span>${r.status}</span></span>`,
+    },
+    {key: 'owner', header: '负责人'},
+    {key: 'updated', header: '更新时间'},
+    {
+      key: 'ms', header: '耗时(ms)', align: 'end',
+      renderCell: r => html`<${Text} hasTabularNumbers>${r.ms}<//>`,
+    },
+  ];
+
+  const COLS2 = [
+    {key: 'service', header: '服务', width: proportional(1, {minWidth: 140})},
+    {
+      key: 'status', header: '状态', width: pixel(110), align: 'center',
+      renderCell: r => html`<${Badge} variant=${r.tone} label=${r.status} />`,
+    },
+    {key: 'owner', header: '负责人', width: pixel(90)},
+    {key: 'updated', header: '更新时间', width: pixel(120)},
+    {
+      key: 'ms', header: '耗时(ms)', width: pixel(96), align: 'end',
+      renderCell: r => html`<${Text} hasTabularNumbers>${r.ms}<//>`,
+    },
+  ];
+
+  function Demo() {
+    return html`
+      <${InternationalizationProvider} locale="zh-CN" messages=${{'zh-CN': zhCN}}>
+        <div className="sec">
+          <span className="cap">Basic 数据驱动 + 富单元格</span>
+          <${Table} data=${ROWS} columns=${COLS} idKey="id" hasHover />
+        </div>
+
+        <div className="sec">
+          <span className="cap">Dense 紧凑 · 条纹 · 网格分隔 · 截断</span>
+          <${Table} data=${ROWS} columns=${COLS2} idKey="id"
+            density="compact" dividers="grid" isStriped hasHover textOverflow="truncate" />
+        </div>
+      <//>
+    `;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(html`<${Demo} />`);
+</script>
+
+</body>
+</html>

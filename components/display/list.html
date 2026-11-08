@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-astryx-theme="neutral" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>列表 List · meta-design</title>
+<script>try{var s=JSON.parse(localStorage.getItem('meta-design')||'null');if(s){if(s.theme)document.documentElement.setAttribute('data-astryx-theme',s.theme);if(s.mode==='light'||s.mode==='dark')document.documentElement.setAttribute('data-theme',s.mode);else document.documentElement.removeAttribute('data-theme');}}catch(e){}</script>
+<link rel="stylesheet" href="../../vendor/fonts.css">
+<link rel="stylesheet" href="../../vendor/reset.css">
+<link rel="stylesheet" href="../../vendor/astryx.css">
+<link rel="stylesheet" href="../../vendor/themes/neutral.css">
+<link rel="stylesheet" href="../../vendor/themes/butter.css">
+<link rel="stylesheet" href="../../vendor/themes/chocolate.css">
+<link rel="stylesheet" href="../../vendor/themes/matcha.css">
+<link rel="stylesheet" href="../../vendor/themes/stone.css">
+<link rel="stylesheet" href="../../vendor/themes/gothic.css">
+<link rel="stylesheet" href="../../vendor/themes/y2k.css">
+<link rel="stylesheet" href="../../shared/frame.css">
+<style>
+  .box{border:1px solid var(--color-border);border-radius:var(--radius-container);
+    background:var(--color-background-card);padding:4px 8px}
+  .pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;align-items:start}
+</style>
+</head>
+<body>
+
+<header class="demo-head">
+  <div class="tags">
+    <a class="home" href="../../index.html">← 总览</a>
+    <span class="tag">display</span>
+    <span class="tag alt">React 19 · Astryx 0.7.11</span>
+    <span class="tag">@astryxdesign/core/List</span>
+  </div>
+  <h1>列表 List</h1>
+  <p>一组有意义的条目：List 负责标题、分隔与密度，ListItem / Item 负责「前导槽 + 标签 + 描述 + 尾槽」的行结构，MetadataList 负责键值对详情。三个示例 —— 可点的活动列表、静态的有序步骤、以及 Item 行原语与元数据面板。</p>
+  <div class="prefs" data-prefs></div>
+</header>
+
+<div class="stage">
+  <div class="window">
+    <div class="titlebar">
+      <span class="dot" style="background:#ff5f57"></span>
+      <span class="dot" style="background:#febc2e"></span>
+      <span class="dot" style="background:#28c840"></span>
+      <span class="url">meta-design · components/display/list.html</span>
+    </div>
+    <div class="surface" id="root"></div>
+  </div>
+
+  <aside class="notes">
+    <h2>什么时候用</h2>
+    <ul>
+      <li>给列表一个 <code>header</code> 标题：既给上下文，也让读屏通过 aria-labelledby 引用整组。</li>
+      <li>头像、徽标、时间戳放 <code>startContent</code> / <code>endContent</code> 槽位，别拼进 label 文本里。</li>
+      <li>键值对详情（环境、版本、状态）用 <code>MetadataList</code>：值短 <code>label.position="start"</code>，值长用 top，长列表用 <code>maxNumOfItems</code> 折叠。</li>
+    </ul>
+    <h2>不要</h2>
+    <ul>
+      <li class="never">在一个列表里混可点行和不可点行又不给视觉区分 —— 用户分不清哪里能点。</li>
+      <li class="never">在可交互行里再放按钮 / 链接 —— 嵌套点击目标让焦点行为混乱。</li>
+      <li class="never">用 List 展示单条内容或互不相关的内容 —— 列表意味着一组有意义的集合。</li>
+    </ul>
+    <h2>关键 props</h2>
+    <ul>
+      <li><code>List</code>：<code>header</code> · <code>density</code> compact / balanced / spacious · <code>hasDividers</code> · <code>edge</code> padded / flush / outset / bleed · <code>listStyle</code> none / disc / decimal</li>
+      <li><code>ListItem</code> / <code>Item</code>：<code>label</code> <b>必填</b> · <code>description</code> · <code>startContent</code> / <code>endContent</code> · <code>onClick</code> 或 <code>href</code></li>
+      <li><code>MetadataList</code>：<code>columns</code> single / multi · <code>label.position</code> start / top · <code>maxNumOfItems</code> · <code>title</code></li>
+    </ul>
+  </aside>
+</div>
+
+<script src="../../vendor/astryx.js"></script>
+<script src="../../shared/frame.js"></script>
+<script>
+  const {React, ReactDOM, htm, Astryx, zhCN} = AstryxKit;
+  const html = htm.bind(React.createElement);
+  const {InternationalizationProvider, List, ListItem, Item, MetadataList, MetadataListItem,
+    Avatar, Badge, StatusDot, Text} = Astryx;
+
+  const ACTIVITY = [
+    {id: 'a1', name: '构建 #4821 通过', desc: 'gateway · 2 分钟前', who: '周予', badge: {variant: 'success', label: '通过'}},
+    {id: 'a2', name: '配置已发布', desc: 'auth-service · 26 分钟前', who: '林澈', badge: {variant: 'info', label: '已发布'}},
+    {id: 'a3', name: '转码任务重试', desc: 'media-transcode · 1 小时前', who: '陈砚', badge: {variant: 'warning', label: '重试'}},
+    {id: 'a4', name: '索引重建完成', desc: 'search-index · 昨天', who: '苏晚', badge: {variant: 'neutral', label: '完成'}},
+  ];
+
+  const STEPS = [
+    '拉取最新代码',
+    '运行门禁（ruff + pytest）',
+    '构建产物并校验哈希',
+    '打 tag 并上传 Release',
+  ];
+
+  function Demo() {
+    const [pick, setPick] = React.useState('');
+
+    return html`
+      <${InternationalizationProvider} locale="zh-CN" messages=${{'zh-CN': zhCN}}>
+        <div className="sec">
+          <span className="cap">Interactive 可点列表（整列表统一可点）</span>
+          <${List} header="最近活动" hasDividers density="balanced">
+            ${ACTIVITY.map(a => html`
+              <${ListItem} key=${a.id} label=${a.name} description=${a.desc}
+                startContent=${html`<${Avatar} name=${a.who} size="sm" />`}
+                endContent=${html`<${Badge} variant=${a.badge.variant} label=${a.badge.label} />`}
+                onClick=${() => setPick(a.name)} />
+            `)}
+          <//>
+          <${Text} type="supporting">${pick ? '已点击：' + pick : '点任意一行试试 —— 列表里所有行都可点，行为一致。'}<//>
+        </div>
+
+        <div className="sec">
+          <span className="cap">Ordered 静态有序步骤</span>
+          <${List} header="发布步骤" listStyle="decimal" density="compact">
+            ${STEPS.map((s, i) => html`<${ListItem} key=${i} label=${s} />`)}
+          <//>
+        </div>
+
+        <div className="pair">
+          <div className="sec">
+            <span className="cap">Item 行原语</span>
+            <div className="box">
+              <${Item} label="周予" description="设计 · 最后活跃 3 分钟前"
+                startContent=${html`<${Avatar} name="周予" size="md" />`}
+                endContent=${html`<${StatusDot} variant="success" label="在线" />`} />
+              <${Item} label="林澈" description="工程 · 离线 2 小时" density="compact"
+                startContent=${html`<${Avatar} name="林澈" size="md" />`}
+                endContent=${html`<${Badge} variant="neutral" label="离线" />`} />
+              <${Item} density="spacious" align="first-line"
+                label=${html`<span>长标签会换行：状态点始终与首行对齐，这就是 align="first-line" 的作用。</span>`}
+                startContent=${html`<${StatusDot} variant="accent" label="焦点" />`} />
+            </div>
+          </div>
+
+          <div className="sec">
+            <span className="cap">MetadataList 键值详情</span>
+            <${MetadataList} title="部署详情">
+              <${MetadataListItem} label="环境">production<//>
+              <${MetadataListItem} label="版本">v0.7.11<//>
+              <${MetadataListItem} label="负责人">周予<//>
+              <${MetadataListItem} label="构建号">#4821<//>
+            <//>
+            <${MetadataList} title="更多属性" columns="multi" maxNumOfItems=${4}>
+              <${MetadataListItem} label="区域">cn-north-1<//>
+              <${MetadataListItem} label="副本数">3<//>
+              <${MetadataListItem} label="协议">MIT<//>
+              <${MetadataListItem} label="负责人">苏晚<//>
+              <${MetadataListItem} label="更新">2026-11-08<//>
+              <${MetadataListItem} label="标签">release<//>
+            <//>
+          </div>
+        </div>
+      <//>
+    `;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(html`<${Demo} />`);
+</script>
+
+</body>
+</html>

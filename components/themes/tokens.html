@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-astryx-theme="neutral" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>主题与 Token · meta-design</title>
+<script>try{var s=JSON.parse(localStorage.getItem('meta-design')||'null');if(s){if(s.theme)document.documentElement.setAttribute('data-astryx-theme',s.theme);if(s.mode==='light'||s.mode==='dark')document.documentElement.setAttribute('data-theme',s.mode);else document.documentElement.removeAttribute('data-theme');}}catch(e){}</script>
+<link rel="stylesheet" href="../../vendor/fonts.css">
+<link rel="stylesheet" href="../../vendor/reset.css">
+<link rel="stylesheet" href="../../vendor/astryx.css">
+<link rel="stylesheet" href="../../vendor/themes/neutral.css">
+<link rel="stylesheet" href="../../vendor/themes/butter.css">
+<link rel="stylesheet" href="../../vendor/themes/chocolate.css">
+<link rel="stylesheet" href="../../vendor/themes/matcha.css">
+<link rel="stylesheet" href="../../vendor/themes/stone.css">
+<link rel="stylesheet" href="../../vendor/themes/gothic.css">
+<link rel="stylesheet" href="../../vendor/themes/y2k.css">
+<link rel="stylesheet" href="../../shared/frame.css">
+<style>
+  .sw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .sw{border:1px solid var(--color-border);border-radius:var(--radius-element);overflow:hidden;background:var(--color-background-card)}
+  .sw .chip{height:52px}
+  .sw .meta{padding:8px 10px;display:flex;flex-direction:column;gap:2px}
+  .sw .tok{font-size:10.5px;font-family:Consolas,monospace;color:var(--color-text-secondary);word-break:break-all}
+  .sw .use{font-size:11.5px;color:var(--color-text-primary)}
+  .type-scale{display:flex;flex-direction:column;gap:6px;background:var(--color-background-card);
+    border:1px solid var(--color-border);border-radius:var(--radius-container);padding:20px}
+  .type-scale .lbl{font-size:10.5px;font-family:Consolas,monospace;color:var(--color-text-secondary)}
+  .radius-row,.shadow-row{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start}
+  .rbox{width:86px;height:64px;background:var(--color-background-accent,var(--color-background-muted));
+    border:1px solid var(--color-border);display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px}
+  .sbox{width:110px;height:64px;background:var(--color-background-card);border:1px solid var(--color-border);
+    display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px}
+  .cap{font-size:10.5px;font-family:Consolas,monospace;color:var(--color-text-secondary)}
+</style>
+</head>
+<body>
+
+<header class="demo-head">
+  <div class="tags">
+    <a class="home" href="../../index.html">← 总览</a>
+    <span class="tag">themes</span>
+    <span class="tag alt">7 套主题 · 198 token · 明暗双模</span>
+    <span class="tag">@astryxdesign/theme-*</span>
+  </div>
+  <h1>主题与 Token</h1>
+  <p>Astryx 的主题 = 一组 CSS 自定义属性覆盖。每套主题编译成一个 <code>theme.css</code>，用 <code>@scope([data-astryx-theme])</code> 圈住自己的作用域 —— 所以七个文件可以同时加载，切主题只是换一个 html 属性，零网络请求。下方所有色块都实时跟随上方主题与明暗开关。</p>
+  <div class="prefs" data-prefs></div>
+</header>
+
+<div class="stage">
+  <div class="window">
+    <div class="titlebar">
+      <span class="dot" style="background:#ff5f57"></span>
+      <span class="dot" style="background:#febc2e"></span>
+      <span class="dot" style="background:#28c840"></span>
+      <span class="url">meta-design · components/themes/tokens.html</span>
+    </div>
+    <div class="surface">
+
+      <div class="sec">
+        <span class="cap">Backgrounds 背景角色</span>
+        <div class="sw-grid">
+          <div class="sw"><div class="chip" style="background:var(--color-background-body)"></div><div class="meta"><span class="tok">--color-background-body</span><span class="use">页面底</span></div></div>
+          <div class="sw"><div class="chip" style="background:var(--color-background-surface)"></div><div class="meta"><span class="tok">--color-background-surface</span><span class="use">抬升面</span></div></div>
+          <div class="sw"><div class="chip" style="background:var(--color-background-card)"></div><div class="meta"><span class="tok">--color-background-card</span><span class="use">卡片</span></div></div>
+          <div class="sw"><div class="chip" style="background:var(--color-background-muted)"></div><div class="meta"><span class="tok">--color-background-muted</span><span class="use">弱化底</span></div></div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <span class="cap">Text 文字角色</span>
+        <div class="sw-grid">
+          <div class="sw"><div class="chip" style="background:var(--color-text-primary)"></div><div class="meta"><span class="tok">--color-text-primary</span><span class="use">正文</span></div></div>
+          <div class="sw"><div class="chip" style="background:var(--color-text-secondary)"></div><div class="meta"><span class="tok">--color-text-secondary</span><span class="use">次级</span></div></div>
+          <div class="sw"><div class="chip" style="background:var(--color-text-accent)"></div><div class="meta"><span class="tok">--color-text-accent</span><span class="use">强调</span></div></div>
+          <div class="sw"><div class="chip" style="background:var(--color-text-success)"></div><div class="meta"><span class="tok">--color-text-success</span><span class="use">成功字</span></div></div>
+          <div class="sw"><div class="chip" style="background:var(--color-text-warning)"></div><div class="meta"><span class="tok">--color-text-warning</span><span class="use">警告字</span></div></div>
+          <div class="sw"><div class="chip" style="background:var(--color-text-error)"></div><div class="meta"><span class="tok">--color-text-error</span><span class="use">错误字</span></div></div>
+          <div class="sw"><div class="chip" style="background:var(--color-text-info)"></div><div class="meta"><span class="tok">--color-text-info</span><span class="use">信息字</span></div></div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <span class="cap">Status 状态填充（strong / muted 成对）</span>
+        <div class="sw-grid">
+          <div class="sw"><div class="chip" style="background:var(--color-success)"></div><div class="meta"><span class="tok">--color-success</span><span class="use">强 fill</span></div></div>
+          <div class="sw"><div class="chip" style="background:var(--color-success-muted)"></div><div class="meta"><span class="tok">--color-success-muted</span><span class="use">淡 fill</span></div></div>
+          <div class="sw"><div class="chip" style="background:var(--color-warning)"></div><div class="meta"><span class="tok">--color-warning</span><span class="use">强 fill</span></div></div>
+          <div class="sw"><div class="chip" style="background:var(--color-warning-muted)"></div><div class="meta"><span class="tok">--color-warning-muted</span><span class="use">淡 fill</span></div></div>
+          <div class="sw"><div class="chip" style="background:var(--color-error)"></div><div class="meta"><span class="tok">--color-error</span><span class="use">强 fill</span></div></div>
+          <div class="sw"><div class="chip" style="background:var(--color-error-muted)"></div><div class="meta"><span class="tok">--color-error-muted</span><span class="use">淡 fill</span></div></div>
+          <div class="sw"><div class="chip" style="background:var(--color-info)"></div><div class="meta"><span class="tok">--color-info</span><span class="use">强 fill</span></div></div>
+          <div class="sw"><div class="chip" style="background:var(--color-info-muted)"></div><div class="meta"><span class="tok">--color-info-muted</span><span class="use">淡 fill</span></div></div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <span class="cap">Typography 排版阶梯（base 14 · ratio 1.2）</span>
+        <div class="type-scale">
+          <div><span class="lbl">--text-heading-1-size</span><div style="font-family:var(--font-family-heading);font-size:var(--text-heading-1-size);font-weight:var(--text-heading-1-weight);line-height:var(--text-heading-1-leading)">标题 Heading 1</div></div>
+          <div><span class="lbl">--text-heading-2-size</span><div style="font-family:var(--font-family-heading);font-size:var(--text-heading-2-size);font-weight:var(--text-heading-2-weight);line-height:var(--text-heading-2-leading)">标题 Heading 2</div></div>
+          <div><span class="lbl">--text-heading-3-size</span><div style="font-family:var(--font-family-heading);font-size:var(--text-heading-3-size);font-weight:var(--text-heading-3-weight);line-height:var(--text-heading-3-leading)">标题 Heading 3</div></div>
+          <div><span class="lbl">--text-body-size</span><div style="font-size:var(--text-body-size);font-weight:var(--text-body-weight);line-height:var(--text-body-leading)">正文 body — The quick brown fox jumps over the lazy dog. 敏捷的棕色狐狸越过懒狗</div></div>
+          <div><span class="lbl">--font-family-code</span><div style="font-family:var(--font-family-code)">const astryx = 'Figtree + system fallbacks';</div></div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <span class="cap">Radius 圆角阶梯</span>
+        <div class="radius-row">
+          <div class="rbox" style="border-radius:var(--radius-none)"><span class="cap">none</span></div>
+          <div class="rbox" style="border-radius:var(--radius-inner)"><span class="cap">inner</span></div>
+          <div class="rbox" style="border-radius:var(--radius-element)"><span class="cap">element</span></div>
+          <div class="rbox" style="border-radius:var(--radius-container)"><span class="cap">container</span></div>
+          <div class="rbox" style="border-radius:var(--radius-page)"><span class="cap">page</span></div>
+          <div class="rbox" style="border-radius:var(--radius-full)"><span class="cap">full</span></div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <span class="cap">Shadow 阴影阶梯</span>
+        <div class="shadow-row">
+          <div class="sbox" style="box-shadow:var(--shadow-low)"><span class="cap">low</span></div>
+          <div class="sbox" style="box-shadow:var(--shadow-med)"><span class="cap">med</span></div>
+          <div class="sbox" style="box-shadow:var(--shadow-high)"><span class="cap">high</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <aside class="notes">
+    <h2>主题怎么工作</h2>
+    <ul>
+      <li><b>198 个 CSS 自定义属性</b>就是全部主题状态 —— 没有 JS 运行时换肤，没有 inline style。</li>
+      <li>每个主题一个 <code>theme.css</code>，用 <code>@scope([data-astryx-theme="…"])</code> 圈作用域，<b>七个文件同时加载互不打架</b>。</li>
+      <li>切主题 = 改 <code>&lt;html data-astryx-theme&gt;</code>，<b>零请求、即时生效</b>（见上方 pill）。</li>
+      <li>明暗双模靠 <code>light-dark()</code>：token 值成对写好，<code>data-theme="dark"</code> 翻转 <code>color-scheme</code> 即可。</li>
+    </ul>
+    <h2>怎么定制</h2>
+    <ul>
+      <li>覆盖变量即可，<b>不用 fork 组件</b>：</li>
+    </ul>
+    <ul>
+      <li><code>[data-astryx-theme] { --color-text-accent: #e85d04 }</code></li>
+      <li>想生成整套主题：<code>defineTheme()</code> + <code>astryx theme build</code>（本仓库 7 套就是这么编译出来的）。</li>
+    </ul>
+    <h2>token 分层</h2>
+    <ul>
+      <li><b>角色层</b>：<code>--color-text-primary</code> 这类语义名 —— 组件只认角色</li>
+      <li><b>主题层</b>：每套主题把角色映射到具体色值</li>
+      <li>所以换主题不用改任何组件 CSS</li>
+    </ul>
+    <h2>本页特点</h2>
+    <ul>
+      <li>纯 HTML/CSS，<b>没有挂 React</b> —— token 层本来就不需要它（这正是选 Astryx 的理由）。</li>
+    </ul>
+  </aside>
+</div>
+
+<script src="../../shared/frame.js"></script>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-astryx-theme="neutral" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>标签页 TabList · meta-design</title>
+<script>try{var s=JSON.parse(localStorage.getItem('meta-design')||'null');if(s){if(s.theme)document.documentElement.setAttribute('data-astryx-theme',s.theme);if(s.mode==='light'||s.mode==='dark')document.documentElement.setAttribute('data-theme',s.mode);else document.documentElement.removeAttribute('data-theme');}}catch(e){}</script>
+<link rel="stylesheet" href="../../vendor/fonts.css">
+<link rel="stylesheet" href="../../vendor/reset.css">
+<link rel="stylesheet" href="../../vendor/astryx.css">
+<link rel="stylesheet" href="../../vendor/themes/neutral.css">
+<link rel="stylesheet" href="../../vendor/themes/butter.css">
+<link rel="stylesheet" href="../../vendor/themes/chocolate.css">
+<link rel="stylesheet" href="../../vendor/themes/matcha.css">
+<link rel="stylesheet" href="../../vendor/themes/stone.css">
+<link rel="stylesheet" href="../../vendor/themes/gothic.css">
+<link rel="stylesheet" href="../../vendor/themes/y2k.css">
+<link rel="stylesheet" href="../../shared/frame.css">
+<style>
+  .variants{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+  .vcell{display:flex;flex-direction:column;gap:8px;align-items:flex-start;
+    background:var(--color-background-card);border:1px solid var(--color-border);
+    border-radius:var(--radius-container);padding:16px}
+  .vcell .cap{font-size:11.5px;color:var(--color-text-secondary);font-family:Consolas,monospace}
+  .panel{
+    border:1px solid var(--color-border);border-radius:var(--radius-container);
+    background:var(--color-background-card);padding:16px;
+    font-size:13.5px;color:var(--color-text-secondary);
+  }
+  .fillbox{width:100%}
+  .count{
+    font-size:11px;padding:1px 7px;border-radius:999px;
+    background:var(--color-background-subtle);color:var(--color-text-secondary);
+    border:1px solid var(--color-border);
+  }
+</style>
+</head>
+<body>
+
+<header class="demo-head">
+  <div class="tags">
+    <a class="home" href="../../index.html">← 总览</a>
+    <span class="tag">nav</span>
+    <span class="tag alt">React 19 · Astryx 0.7.11</span>
+    <span class="tag">@astryxdesign/core/TabList</span>
+  </div>
+  <h1>标签页 TabList</h1>
+  <p>在几个相关视图之间切换而不离开当前页：TabList 是受控条（value + onChange），Tab 是单个标签。本页用 useState 驱动选中态，含 ARIA tabs 面板联动、三档尺寸、fill 布局与分隔线。</p>
+  <div class="prefs" data-prefs></div>
+</header>
+
+<div class="stage">
+  <div class="window">
+    <div class="titlebar">
+      <span class="dot" style="background:#ff5f57"></span>
+      <span class="dot" style="background:#febc2e"></span>
+      <span class="dot" style="background:#28c840"></span>
+      <span class="url">meta-design · components/nav/tabs.html</span>
+    </div>
+    <div class="surface" id="root"></div>
+  </div>
+
+  <aside class="notes">
+    <h2>什么时候用</h2>
+    <ul>
+      <li>同一上下文里切换几个<b>相关视图</b>（概览 / 动态 / 设置）→ <code>TabList</code>，受控 <code>value</code> + <code>onChange</code>。</li>
+      <li>就地切面板时给条子 <code>role="tablist"</code>，每个 Tab 用 <code>panelId</code> 指向面板 id——这是读屏从标签跳到内容的唯一通道。</li>
+      <li>与 <code>hasDivider</code> 同时放操作按钮时，把 Button 尺寸和 TabList 尺寸对齐（都 md 或都 sm），两者才会落在同一条基线上。</li>
+    </ul>
+    <h2>不要</h2>
+    <ul>
+      <li class="never">用标签页做顺序步骤 / 向导 —— 那是 Stepper 的活。</li>
+      <li class="never">超过 6–8 个可见标签还硬排 —— 把次要的收进 TabMenu。</li>
+      <li class="never">和 SegmentedControl / ToggleButton 搞混：TabList 是<b>导航</b>，后两者是输入控件。</li>
+    </ul>
+    <h2>关键 props</h2>
+    <ul>
+      <li><code>value</code> · <code>onChange</code> <b>必填</b>（TabList 受控对）</li>
+      <li><code>size</code> sm / md / lg · <code>layout</code> hug / fill</li>
+      <li><code>hasDivider</code> · <code>role</code> · <code>overflow</code> auto / scroll / visible</li>
+      <li>Tab：<code>value</code> · <code>label</code> <b>必填</b>，<code>panelId</code> · <code>href</code> · <code>endContent</code></li>
+    </ul>
+  </aside>
+</div>
+
+<script src="../../vendor/astryx.js"></script>
+<script src="../../shared/frame.js"></script>
+<script>
+  const {React, ReactDOM, htm, Astryx, zhCN} = AstryxKit;
+  const html = htm.bind(React.createElement);
+  const {InternationalizationProvider, TabList, Tab} = Astryx;
+
+  const PANELS = {
+    overview: '概览面板：本周活跃成员、发布节奏与关键指标都汇总在这里。',
+    activity: '动态面板：最近的评论、审阅与部署事件按时间倒序排列。',
+    settings: '设置面板：命名空间、通知偏好与默认主题在此调整。',
+  };
+
+  /* 基本用法：受控选中 + role="tablist" + panelId 面板联动 */
+  function BasicDemo() {
+    const [tab, setTab] = React.useState('overview');
+    return html`
+      <div className="sec">
+        <span className="cap">Basic 受控选中 · ARIA 面板联动</span>
+        <${TabList} value=${tab} onChange=${setTab} role="tablist" hasDivider>
+          <${Tab} value="overview" label="概览" panelId="panel-overview" />
+          <${Tab} value="activity" label="动态" panelId="panel-activity" />
+          <${Tab} value="settings" label="设置" panelId="panel-settings" />
+        <//>
+        <div className="panel">
+          ${Object.keys(PANELS).map(k => html`
+            <div
+              key=${k}
+              id=${'panel-' + k}
+              role="tabpanel"
+              hidden=${tab !== k}
+            >${PANELS[k]}</div>
+          `)}
+        </div>
+        <span className="cap">当前 value = "${tab}"</span>
+      </div>
+    `;
+  }
+
+  /* 三档尺寸 */
+  function SizeDemo(props) {
+    const [tab, setTab] = React.useState('a');
+    return html`
+      <div className="vcell">
+        <${TabList} size=${props.size} value=${tab} onChange=${setTab}>
+          <${Tab} value="a" label="标签 A" />
+          <${Tab} value="b" label="标签 B" />
+          <${Tab} value="c" label="标签 C" />
+        <//>
+        <span className="cap">size="${props.size}"</span>
+      </div>
+    `;
+  }
+
+  /* fill 布局：标签等分容器宽度 */
+  function FillDemo() {
+    const [tab, setTab] = React.useState('inbox');
+    return html`
+      <div className="sec">
+        <span className="cap">Layout fill 等分填充（layout="fill"）</span>
+        <div className="fillbox">
+          <${TabList} layout="fill" value=${tab} onChange=${setTab} hasDivider>
+            <${Tab} value="inbox" label="收件箱 12" endContent=${html`<span className="count">12</span>`} />
+            <${Tab} value="drafts" label="草稿" />
+            <${Tab} value="sent" label="已发送" />
+            <${Tab} value="archive" label="归档" />
+          <//>
+        </div>
+        <span className="cap">当前 value = "${tab}"</span>
+      </div>
+    `;
+  }
+
+  function Demo() {
+    return html`
+      <${InternationalizationProvider} locale="zh-CN" messages=${{'zh-CN': zhCN}}>
+        <${BasicDemo} />
+
+        <div className="sec">
+          <span className="cap">Sizes 尺寸</span>
+          <div className="variants">
+            <${SizeDemo} size="sm" />
+            <${SizeDemo} size="md" />
+            <${SizeDemo} size="lg" />
+          </div>
+        </div>
+
+        <${FillDemo} />
+      <//>
+    `;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(html`<${Demo} />`);
+</script>
+
+</body>
+</html>

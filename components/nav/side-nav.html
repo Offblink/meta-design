@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-astryx-theme="neutral" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>侧边导航 SideNav · meta-design</title>
+<script>try{var s=JSON.parse(localStorage.getItem('meta-design')||'null');if(s){if(s.theme)document.documentElement.setAttribute('data-astryx-theme',s.theme);if(s.mode==='light'||s.mode==='dark')document.documentElement.setAttribute('data-theme',s.mode);else document.documentElement.removeAttribute('data-theme');}}catch(e){}</script>
+<link rel="stylesheet" href="../../vendor/fonts.css">
+<link rel="stylesheet" href="../../vendor/reset.css">
+<link rel="stylesheet" href="../../vendor/astryx.css">
+<link rel="stylesheet" href="../../vendor/themes/neutral.css">
+<link rel="stylesheet" href="../../vendor/themes/butter.css">
+<link rel="stylesheet" href="../../vendor/themes/chocolate.css">
+<link rel="stylesheet" href="../../vendor/themes/matcha.css">
+<link rel="stylesheet" href="../../vendor/themes/stone.css">
+<link rel="stylesheet" href="../../vendor/themes/gothic.css">
+<link rel="stylesheet" href="../../vendor/themes/y2k.css">
+<link rel="stylesheet" href="../../shared/frame.css">
+<style>
+  .navgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;align-items:start}
+  .navbox{
+    border:1px solid var(--color-border);border-radius:var(--radius-container);
+    background:var(--color-background-card);overflow:hidden;
+  }
+  .navbox .navmeta{
+    padding:8px 14px;font-size:11.5px;color:var(--color-text-secondary);
+    font-family:Consolas,monospace;border-bottom:1px solid var(--color-border);
+  }
+  .navbox .navinner{padding:12px;min-height:320px}
+  .count{
+    font-size:11px;padding:1px 7px;border-radius:999px;
+    background:var(--color-background-subtle);color:var(--color-text-secondary);
+    border:1px solid var(--color-border);
+  }
+  .navfoot{font-size:12px;color:var(--color-text-secondary);padding:8px 12px}
+</style>
+</head>
+<body>
+
+<header class="demo-head">
+  <div class="tags">
+    <a class="home" href="../../index.html">← 总览</a>
+    <span class="tag">nav</span>
+    <span class="tag alt">React 19 · Astryx 0.7.11</span>
+    <span class="tag">@astryxdesign/core/SideNav</span>
+  </div>
+  <h1>侧边导航 SideNav</h1>
+  <p>应用的主导航地标：SideNav（容器）+ SideNavHeading（品牌头）+ SideNavSection（分组）+ SideNavItem（条目）。本页静态展示选中态、禁用态、折叠子项与 sm 尺寸；SideNav 自身渲染 nav landmark，不依赖 AppShell 即可独立使用。</p>
+  <div class="prefs" data-prefs></div>
+</header>
+
+<div class="stage">
+  <div class="window">
+    <div class="titlebar">
+      <span class="dot" style="background:#ff5f57"></span>
+      <span class="dot" style="background:#febc2e"></span>
+      <span class="dot" style="background:#28c840"></span>
+      <span class="url">meta-design · components/nav/side-nav.html</span>
+    </div>
+    <div class="surface" id="root"></div>
+  </div>
+
+  <aside class="notes">
+    <h2>什么时候用</h2>
+    <ul>
+      <li>应用有 <b>≥5 个目的地或需要层级分组</b>时，SideNav 作主导航；用 <code>SideNavSection</code> 分组帮助扫读。</li>
+      <li>当前页条目给 <code>isSelected</code>：它会设 aria-current="page"，读屏能读出「当前」，而不是只靠颜色。</li>
+      <li>条目要折叠子项时给 <code>collapsible</code>（true 未受控 / 对象受控），折叠后子组 inert，符合 APG Disclosure 模式。</li>
+    </ul>
+    <h2>不要</h2>
+    <ul>
+      <li class="never">TopNav 已经给出应用身份时再放 SideNavHeading —— 品牌重复。</li>
+      <li class="never">用侧导航做过滤内容 —— 那是 tabs 或筛选按钮。</li>
+      <li class="never">折叠态的 flyout 里放<b>没有其他入口</b>的操作。</li>
+    </ul>
+    <h2>关键 props</h2>
+    <ul>
+      <li>SideNav：<code>header</code> / <code>topContent</code> / <code>children</code> / <code>footer</code>，<code>collapsible</code>、<code>resizable</code></li>
+      <li>SideNavSection：<code>title</code> <b>必填</b>、<code>subtitle</code>、<code>endContent</code></li>
+      <li>SideNavItem：<code>label</code> <b>必填</b>、<code>isSelected</code>、<code>isDisabled</code>、<code>size</code> sm / md / lg、<code>collapsible</code>、<code>endContent</code></li>
+      <li>SideNavHeading：<code>heading</code> <b>必填</b>、<code>superheading</code>、<code>subheading</code></li>
+    </ul>
+  </aside>
+</div>
+
+<script src="../../vendor/astryx.js"></script>
+<script src="../../shared/frame.js"></script>
+<script>
+  const {React, ReactDOM, htm, Astryx, zhCN} = AstryxKit;
+  const html = htm.bind(React.createElement);
+  const {InternationalizationProvider, SideNav, SideNavHeading, SideNavSection, SideNavItem} = Astryx;
+
+  function MainNav() {
+    return html`
+      <div className="navbox">
+        <div className="navmeta">SideNav（默认 md 尺寸 · isSelected 静态选中）</div>
+        <div className="navinner">
+          <${SideNav}
+            header=${html`<${SideNavHeading} heading="Astryx 工作台" superheading="设计系统" />`}
+            footer=${html`<div className="navfoot">v0.7.11 · 已同步</div>`}
+          >
+            <${SideNavSection} title="工作区">
+              <${SideNavItem} label="总览" isSelected />
+              <${SideNavItem} label="项目" endContent=${html`<span className="count">8</span>`} />
+              <${SideNavItem} label="成员" />
+              <${SideNavItem} label="资源库" collapsible>
+                <${SideNavItem} label="图标" />
+                <${SideNavItem} label="色板" />
+                <${SideNavItem} label="字体" />
+              <//>
+            <//>
+            <${SideNavSection} title="系统">
+              <${SideNavItem} label="设置" />
+              <${SideNavItem} label="帮助中心" isDisabled />
+            <//>
+          <//>
+        </div>
+      </div>
+    `;
+  }
+
+  function CompactNav() {
+    return html`
+      <div className="navbox">
+        <div className="navmeta">SideNavItem size="sm"（密集列表 · 选中在第二项）</div>
+        <div className="navinner">
+          <${SideNav}
+            header=${html`<${SideNavHeading} heading="控制台" subheading="团队版" />`}
+          >
+            <${SideNavSection} title="监控">
+              <${SideNavItem} label="概览" size="sm" />
+              <${SideNavItem} label="日志" size="sm" isSelected />
+              <${SideNavItem} label="告警" size="sm" endContent=${html`<span className="count">3</span>`} />
+              <${SideNavItem} label="审计" size="sm" isDisabled />
+            <//>
+            <${SideNavSection} title="资源">
+              <${SideNavItem} label="集群" size="sm" />
+              <${SideNavItem} label="密钥" size="sm" />
+            <//>
+          <//>
+        </div>
+      </div>
+    `;
+  }
+
+  function Demo() {
+    return html`
+      <${InternationalizationProvider} locale="zh-CN" messages=${{'zh-CN': zhCN}}>
+        <div className="sec">
+          <span className="cap">SideNav 侧边导航（静态选中态展示）</span>
+          <div className="navgrid">
+            <${MainNav} />
+            <${CompactNav} />
+          </div>
+        </div>
+      <//>
+    `;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(html`<${Demo} />`);
+</script>
+
+</body>
+</html>

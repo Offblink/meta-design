@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-astryx-theme="neutral" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>面包屑与分页 Breadcrumbs · Pagination · meta-design</title>
+<script>try{var s=JSON.parse(localStorage.getItem('meta-design')||'null');if(s){if(s.theme)document.documentElement.setAttribute('data-astryx-theme',s.theme);if(s.mode==='light'||s.mode==='dark')document.documentElement.setAttribute('data-theme',s.mode);else document.documentElement.removeAttribute('data-theme');}}catch(e){}</script>
+<link rel="stylesheet" href="../../vendor/fonts.css">
+<link rel="stylesheet" href="../../vendor/reset.css">
+<link rel="stylesheet" href="../../vendor/astryx.css">
+<link rel="stylesheet" href="../../vendor/themes/neutral.css">
+<link rel="stylesheet" href="../../vendor/themes/butter.css">
+<link rel="stylesheet" href="../../vendor/themes/chocolate.css">
+<link rel="stylesheet" href="../../vendor/themes/matcha.css">
+<link rel="stylesheet" href="../../vendor/themes/stone.css">
+<link rel="stylesheet" href="../../vendor/themes/gothic.css">
+<link rel="stylesheet" href="../../vendor/themes/y2k.css">
+<link rel="stylesheet" href="../../shared/frame.css">
+<style>
+  .variants{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+  .vcell{display:flex;flex-direction:column;gap:10px;align-items:flex-start;
+    background:var(--color-background-card);border:1px solid var(--color-border);
+    border-radius:var(--radius-container);padding:16px}
+  .vcell .cap{font-size:11.5px;color:var(--color-text-secondary);font-family:Consolas,monospace}
+  .panel{
+    border:1px solid var(--color-border);border-radius:var(--radius-container);
+    background:var(--color-background-card);padding:16px;
+    font-size:13.5px;color:var(--color-text-secondary);
+    display:flex;flex-direction:column;gap:10px;
+  }
+  .panel .lines{display:flex;flex-direction:column;gap:6px}
+  .panel .line{display:flex;justify-content:space-between;gap:12px;
+    border-bottom:1px dashed var(--color-border);padding-bottom:5px;font-size:13px}
+</style>
+</head>
+<body>
+
+<header class="demo-head">
+  <div class="tags">
+    <a class="home" href="../../index.html">← 总览</a>
+    <span class="tag">nav</span>
+    <span class="tag alt">React 19 · Astryx 0.7.11</span>
+    <span class="tag">@astryxdesign/core/Breadcrumbs · Pagination</span>
+  </div>
+  <h1>面包屑与分页 Breadcrumbs · Pagination</h1>
+  <p>Breadcrumbs 回答「我在哪、怎么回去」，放在页面标题之上；Pagination 回答「还有多少、怎么翻」，放在内容之下。两者都是受控组件：本页用 useState 管面包屑跳转与页码，分页随页码联动渲染占位列表。</p>
+  <div class="prefs" data-prefs></div>
+</header>
+
+<div class="stage">
+  <div class="window">
+    <div class="titlebar">
+      <span class="dot" style="background:#ff5f57"></span>
+      <span class="dot" style="background:#febc2e"></span>
+      <span class="dot" style="background:#28c840"></span>
+      <span class="url">meta-design · components/nav/pagination.html</span>
+    </div>
+    <div class="surface" id="root"></div>
+  </div>
+
+  <aside class="notes">
+    <h2>什么时候用</h2>
+    <ul>
+      <li>详情页 / 设置面板顶部放 <code>Breadcrumbs</code>，<b>位置在页面标题之上</b>；最后一项标 <code>isCurrent</code>（组件自动 aria-current="page"）。</li>
+      <li>表格下方放 <code>Pagination</code>：总数已知传 <code>totalItems</code>，只知道页数传 <code>totalPages</code>，游标式翻页用 <code>hasMore</code>。</li>
+      <li>用户要控制每页条数 → count 变体 + <code>pageSizeOptions</code>；表格要跳页 → pages 变体；轮播 → dots 变体。</li>
+    </ul>
+    <h2>不要</h2>
+    <ul>
+      <li class="never">把面包屑当主导航 —— 它只是侧边栏 / 顶栏的补充。</li>
+      <li class="never">没有父级的顶层页面也挂面包屑，或层级超过 5 级。</li>
+      <li class="never">内容一页放得下还显示分页，或把分页放在内容<b>上方</b>。</li>
+    </ul>
+    <h2>关键 props</h2>
+    <ul>
+      <li>Breadcrumbs：<code>children</code> <b>必填</b>，<code>separator</code>、<code>variant</code> default / supporting、<code>label</code></li>
+      <li>BreadcrumbItem：<code>children</code> <b>必填</b>，<code>href</code>、<code>isCurrent</code>、<code>menu</code></li>
+      <li>Pagination：<code>page</code> · <code>onChange</code> <b>必填</b>，<code>totalItems</code> / <code>totalPages</code>、<code>variant</code> pages / count / compact / dots / input、<code>size</code> sm / md、<code>pageSize</code></li>
+    </ul>
+  </aside>
+</div>
+
+<script src="../../vendor/astryx.js"></script>
+<script src="../../shared/frame.js"></script>
+<script>
+  const {React, ReactDOM, htm, Astryx, zhCN} = AstryxKit;
+  const html = htm.bind(React.createElement);
+  const {InternationalizationProvider, Breadcrumbs, BreadcrumbItem, Pagination} = Astryx;
+
+  const PAGE_SIZE = 6;
+  const TOTAL = 42;
+
+  function rowsFor(page) {
+    const start = (page - 1) * PAGE_SIZE + 1;
+    return Array.from({length: PAGE_SIZE}, (_, i) => start + i);
+  }
+
+  /* 面包屑两种变体：点击非当前项会回到该层级（受控演示） */
+  function BreadcrumbDemo() {
+    const [level, setLevel] = React.useState(3);
+    const crumbs = [
+      {label: '首页', href: '#'},
+      {label: '项目', href: '#'},
+      {label: 'Astryx', href: '#'},
+      {label: '详情', href: '#'},
+    ];
+    const visible = crumbs.slice(0, level).map((c, i) => ({
+      ...c,
+      go: (e) => { e.preventDefault(); setLevel(i + 1); },
+    }));
+    return html`
+      <div className="sec">
+        <span className="cap">Breadcrumbs 层级随点击收缩（受控演示）</span>
+        <${Breadcrumbs} label="示例面包屑">
+          ${visible.map((c, i) => html`
+            <${BreadcrumbItem}
+              key=${c.label}
+              href=${c.href}
+              onClick=${c.go}
+              isCurrent=${i === visible.length - 1}
+            >${c.label}<//>
+          `)}
+        <//>
+        <${Breadcrumbs} variant="supporting" label="紧凑面包屑">
+          <${BreadcrumbItem} href="#">首页<//>
+          <${BreadcrumbItem} href="#">项目<//>
+          <${BreadcrumbItem} isCurrent>Astryx<//>
+        <//>
+        <span className="cap">variant="default"（上）与 variant="supporting"（下，密集界面用）</span>
+      </div>
+    `;
+  }
+
+  /* 主场景：pages 变体 + 占位列表联动 */
+  function PaginatedList() {
+    const [page, setPage] = React.useState(1);
+    return html`
+      <div className="sec">
+        <span className="cap">Pagination · pages 变体（受控页码）</span>
+        <div className="panel">
+          <div className="lines">
+            ${rowsFor(page).map(n => html`
+              <div className="line" key=${n}>
+                <span>记录 #${n}</span>
+                <span>${n % 2 === 0 ? '已同步' : '待处理'}</span>
+              </div>
+            `)}
+          </div>
+        </div>
+        <${Pagination}
+          page=${page}
+          onChange=${setPage}
+          totalItems=${TOTAL}
+          pageSize=${PAGE_SIZE}
+          label="记录分页"
+        />
+        <span className="cap">page = ${page} / ${Math.ceil(TOTAL / PAGE_SIZE)}</span>
+      </div>
+    `;
+  }
+
+  /* 其余变体，各自受控 */
+  function CountDemo() {
+    const [page, setPage] = React.useState(2);
+    const [size, setSize] = React.useState(10);
+    return html`
+      <div className="vcell">
+        <${Pagination}
+          variant="count"
+          page=${page}
+          onChange=${setPage}
+          totalItems=${97}
+          pageSize=${size}
+          pageSizeOptions=${[10, 20, 50]}
+          onPageSizeChange=${setSize}
+          label="计数分页"
+        />
+        <span className="cap">variant="count" + pageSizeOptions</span>
+      </div>
+    `;
+  }
+
+  function CompactDemo() {
+    const [page, setPage] = React.useState(3);
+    return html`
+      <div className="vcell">
+        <${Pagination}
+          variant="compact"
+          hasFirstLast
+          page=${page}
+          onChange=${setPage}
+          totalPages=${12}
+          label="紧凑分页"
+        />
+        <span className="cap">variant="compact" hasFirstLast totalPages=12</span>
+      </div>
+    `;
+  }
+
+  function DotsDemo() {
+    const [page, setPage] = React.useState(1);
+    return html`
+      <div className="vcell">
+        <${Pagination}
+          variant="dots"
+          size="sm"
+          page=${page}
+          onChange=${setPage}
+          totalPages=${6}
+          label="圆点分页"
+        />
+        <span className="cap">variant="dots" totalPages=6</span>
+      </div>
+    `;
+  }
+
+  function DisabledDemo() {
+    return html`
+      <div className="vcell">
+        <${Pagination}
+          isDisabled
+          page=${1}
+          onChange=${() => {}}
+          totalPages=${5}
+          label="禁用分页"
+        />
+        <span className="cap">isDisabled（无结果 / 加载中时）</span>
+      </div>
+    `;
+  }
+
+  function Demo() {
+    return html`
+      <${InternationalizationProvider} locale="zh-CN" messages=${{'zh-CN': zhCN}}>
+        <${BreadcrumbDemo} />
+        <${PaginatedList} />
+
+        <div className="sec">
+          <span className="cap">Variants 变体</span>
+          <div className="variants">
+            <${CountDemo} />
+            <${CompactDemo} />
+            <${DotsDemo} />
+            <${DisabledDemo} />
+          </div>
+        </div>
+      <//>
+    `;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(html`<${Demo} />`);
+</script>
+
+</body>
+</html>

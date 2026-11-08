@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-astryx-theme="neutral" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>文本输入 TextInput · meta-design</title>
+<script>try{var s=JSON.parse(localStorage.getItem('meta-design')||'null');if(s){if(s.theme)document.documentElement.setAttribute('data-astryx-theme',s.theme);if(s.mode==='light'||s.mode==='dark')document.documentElement.setAttribute('data-theme',s.mode);else document.documentElement.removeAttribute('data-theme');}}catch(e){}</script>
+<link rel="stylesheet" href="../../vendor/fonts.css">
+<link rel="stylesheet" href="../../vendor/reset.css">
+<link rel="stylesheet" href="../../vendor/astryx.css">
+<link rel="stylesheet" href="../../vendor/themes/neutral.css">
+<link rel="stylesheet" href="../../vendor/themes/butter.css">
+<link rel="stylesheet" href="../../vendor/themes/chocolate.css">
+<link rel="stylesheet" href="../../vendor/themes/matcha.css">
+<link rel="stylesheet" href="../../vendor/themes/stone.css">
+<link rel="stylesheet" href="../../vendor/themes/gothic.css">
+<link rel="stylesheet" href="../../vendor/themes/y2k.css">
+<link rel="stylesheet" href="../../shared/frame.css">
+<style>
+  .cells{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:14px}
+  .cell{display:flex;flex-direction:column;gap:8px;align-content:start;
+    background:var(--color-background-card);border:1px solid var(--color-border);
+    border-radius:var(--radius-container);padding:16px}
+  .cell .cap{font-size:11.5px;color:var(--color-text-secondary);font-family:Consolas,monospace}
+  /* Field 包裹的原生控件（非 Astryx 组件，本页自绘外壳） */
+  .native-input{font:inherit;color:var(--color-text-primary);width:100%;
+    background:var(--color-background-card);border:1px solid var(--color-border);
+    border-radius:var(--radius-container);padding:7px 10px}
+  .native-range{width:100%}
+</style>
+</head>
+<body>
+
+<header class="demo-head">
+  <div class="tags">
+    <a class="home" href="../../index.html">← 总览</a>
+    <span class="tag">forms</span>
+    <span class="tag alt">React 19 · Astryx 0.7.11</span>
+    <span class="tag">@astryxdesign/core/TextInput</span>
+    <span class="tag">@astryxdesign/core/TextArea</span>
+    <span class="tag">@astryxdesign/core/Field</span>
+  </div>
+  <h1>文本输入 TextInput</h1>
+  <p>收集文字的三件套：<code>TextInput</code> 管单行短值（姓名、邮箱、搜索），<code>TextArea</code> 管多行内容（简介、留言，带字数计数器），<code>Field</code> 只负责给「自己写的控件」补上 label、帮助文本与校验状态——Astryx 自带外壳的输入不要再套一层 Field。所有输入均为受控，随主题与明暗切换即时变色。</p>
+  <div class="prefs" data-prefs></div>
+</header>
+
+<div class="stage">
+  <div class="window">
+    <div class="titlebar">
+      <span class="dot" style="background:#ff5f57"></span>
+      <span class="dot" style="background:#febc2e"></span>
+      <span class="dot" style="background:#28c840"></span>
+      <span class="url">meta-design · components/forms/text-input.html</span>
+    </div>
+    <div class="surface" id="root"></div>
+  </div>
+
+  <aside class="notes">
+    <h2>什么时候用</h2>
+    <ul>
+      <li><b>永远给可见的 <code>label</code></b>；只有上下文自明时（带图标的搜索框）才 <code>isLabelHidden</code>，读屏仍能读到。</li>
+      <li>短值用 <code>TextInput</code>，多行内容用 <code>TextArea</code>：设 <code>maxLength</code> 就会带字数计数器，用户提交前就知道还剩多少。</li>
+      <li>校验用 <code>status</code> 带 <code>message</code> 说明「错在哪」（"邮箱必须包含 @"），比只把边框染红有用得多；触屏场景补 <code>type</code> / <code>inputMode</code> / <code>enterKeyHint</code> / <code>autoComplete</code>，让键盘出对、AutoFill 能填。</li>
+      <li>只有<b>自己写的、没有外壳的控件</b>才用 <code>Field</code> 包：它补 label、<code>description</code> 与 <code>status</code>，并用 <code>inputID</code> / <code>descriptionID</code> 接好 htmlFor 与 aria-describedby。</li>
+    </ul>
+    <h2>不要</h2>
+    <ul>
+      <li class="never">拿 <code>placeholder</code> 当 label —— 聚焦即消失，读屏也不可靠。</li>
+      <li class="never">把 <code>TextInput</code> / <code>TextArea</code> 再套进 <code>Field</code> —— 它们自带 Field 外壳，会嵌两层。</li>
+      <li class="never">所有字段都标 <code>isRequired</code>，或同一字段同时设 <code>isOptional</code> 与 <code>isRequired</code>。</li>
+      <li class="never">给禁用的输入包 Tooltip 解释原因 —— 用 <code>disabledMessage</code>，原因直接挂在字段上。</li>
+    </ul>
+    <h2>关键 props</h2>
+    <ul>
+      <li><code>TextInput</code>：<code>label</code> 与 <code>value</code> 必填，配 <code>onChange</code> 受控</li>
+      <li><code>status</code> = <code>{type, message}</code>，<code>statusVariant</code> attached / detached / tooltip</li>
+      <li><code>hasClear</code> · <code>type</code> · <code>inputMode</code> · <code>enterKeyHint</code> · <code>disabledMessage</code></li>
+      <li><code>TextArea</code>：<code>rows</code> · <code>maxLength</code>（计数器）</li>
+      <li><code>Field</code>：<code>label</code> + <code>inputID</code> + <code>children</code> 必填，<code>description</code> / <code>statusVariant="detached"</code></li>
+    </ul>
+  </aside>
+</div>
+
+<script src="../../vendor/astryx.js"></script>
+<script src="../../shared/frame.js"></script>
+<script>
+  const {React, ReactDOM, htm, Astryx, zhCN} = AstryxKit;
+  const html = htm.bind(React.createElement);
+  const {InternationalizationProvider, TextInput, TextArea, Field} = Astryx;
+
+  function Demo() {
+    const [name, setName] = React.useState('周予');
+    const [mail, setMail] = React.useState('zhouyu@');
+    const [search, setSearch] = React.useState('');
+    const [zip, setZip] = React.useState('100000');
+    const [phone, setPhone] = React.useState('13800000000');
+    const [url, setUrl] = React.useState('');
+    const [opt, setOpt] = React.useState('');
+    const [ok, setOk] = React.useState('ok@example.com');
+    const [bio, setBio] = React.useState('前端工程师，喜欢把界面做顺手一点。');
+    const [msg, setMsg] = React.useState('');
+
+    const mailStatus = mail.includes('@') && mail.includes('.')
+      ? {type: 'success', message: '邮箱可用'}
+      : {type: 'error', message: '邮箱格式不正确：还缺少 @ 后缀或域名'};
+
+    return html`
+      <${InternationalizationProvider} locale="zh-CN" messages=${{'zh-CN': zhCN}}>
+        <div className="sec">
+          <span className="cap">TextInput 单行</span>
+          <div className="row">
+            <${TextInput}
+              label="昵称"
+              value=${name}
+              onChange=${v => setName(v)}
+              description="展示在个人主页上的名字，可随时修改。"
+              placeholder="请输入昵称"
+              isRequired
+              width=${270}
+            />
+            <${TextInput}
+              label="邮箱"
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              enterKeyHint="next"
+              value=${mail}
+              onChange=${v => setMail(v)}
+              status=${mailStatus}
+              statusVariant="detached"
+              width=${290}
+            />
+            <${TextInput}
+              label="搜索订单"
+              type="search"
+              enterKeyHint="search"
+              isLabelHidden
+              hasClear
+              placeholder="按订单号或客户名搜索"
+              value=${search}
+              onChange=${v => setSearch(v)}
+              width=${260}
+            />
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">Sizes 尺寸（按内容长度选）</span>
+          <div className="row">
+            <${TextInput} size="sm" label="邮编" value=${zip} onChange=${v => setZip(v)} width=${150} />
+            <${TextInput} size="md" label="手机号" type="tel" inputMode="tel" value=${phone} onChange=${v => setPhone(v)} width=${220} />
+            <${TextInput} size="lg" label="主页地址" type="url" inputMode="url" value=${url} onChange=${v => setUrl(v)} placeholder="https://" width=${300} />
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">States 状态</span>
+          <div className="cells">
+            <div className="cell">
+              <${TextInput}
+                label="项目代号"
+                value="A-1024"
+                onChange=${() => {}}
+                isDisabled
+                disabledMessage="归档后的项目不可修改"
+                width="100%"
+              />
+              <span className="cap">isDisabled + disabledMessage</span>
+            </div>
+            <div className="cell">
+              <${TextInput}
+                label="创建时间"
+                value="2026-11-08 09:30"
+                onChange=${() => {}}
+                isReadOnly
+                width="100%"
+              />
+              <span className="cap">isReadOnly（不变暗、随表单提交）</span>
+            </div>
+            <div className="cell">
+              <${TextInput}
+                label="服务端校验中"
+                value="checking@example.com"
+                onChange=${() => {}}
+                isLoading
+                width="100%"
+              />
+              <span className="cap">isLoading（aria-busy）</span>
+            </div>
+            <div className="cell">
+              <${TextInput}
+                label="已通过校验"
+                value=${ok}
+                onChange=${v => setOk(v)}
+                status=${{type: 'success'}}
+                width="100%"
+              />
+              <span className="cap">status = success</span>
+            </div>
+            <div className="cell">
+              <${TextInput}
+                label="昵称拼音"
+                value=${opt}
+                onChange=${v => setOpt(v)}
+                isOptional
+                placeholder="可以留空"
+                width="100%"
+              />
+              <span className="cap">isOptional（与 isRequired 互斥）</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">TextArea 多行</span>
+          <div className="row">
+            <${TextArea}
+              label="个人简介"
+              value=${bio}
+              onChange=${v => setBio(v)}
+              rows=${4}
+              maxLength=${120}
+              description="一两句话介绍你自己，最多 120 字（右下角有计数器）。"
+              isRequired
+              width=${360}
+            />
+            <${TextArea}
+              label="给卖家的留言"
+              value=${msg}
+              onChange=${v => setMsg(v)}
+              rows=${4}
+              placeholder="描述你遇到的问题…"
+              description="留空时立刻给出错误态；填写后自动转为通过。"
+              status=${msg.trim() ? {type: 'success'} : {type: 'error', message: '留言不能为空：请先填写内容'}}
+              statusVariant="detached"
+              isRequired
+              width=${340}
+            />
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">Field 包裹自定义 / 原生控件</span>
+          <div className="cells">
+            <div className="cell">
+              <${Field}
+                label="置信度"
+                inputID="demo-confidence"
+                description="拖动选择 0–100 的取值。"
+                descriptionID="demo-confidence-help"
+                status=${{type: 'success', message: '默认值即可用'}}
+                statusVariant="detached"
+                isRequired
+                width="100%"
+              >
+                <input className="native-range" id="demo-confidence" type="range" min="0" max="100" defaultValue="60" aria-describedby="demo-confidence-help" />
+              <//>
+              <span className="cap">Field + 原生 range（detached 状态）</span>
+            </div>
+            <div className="cell">
+              <${Field}
+                label="内部编号"
+                inputID="demo-internal-id"
+                description="没有系统编号可以留空。"
+                descriptionID="demo-internal-id-help"
+                isOptional
+                width="100%"
+              >
+                <input className="native-input" id="demo-internal-id" type="text" placeholder="如 OPS-2049" defaultValue="" aria-describedby="demo-internal-id-help" />
+              <//>
+              <span className="cap">Field + 原生 input（label + 帮助文本）</span>
+            </div>
+          </div>
+        </div>
+      <//>
+    `;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(html`<${Demo} />`);
+</script>
+
+</body>
+</html>

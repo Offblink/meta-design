@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-astryx-theme="neutral" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>对话框 Dialog · meta-design</title>
+<script>try{var s=JSON.parse(localStorage.getItem('meta-design')||'null');if(s){if(s.theme)document.documentElement.setAttribute('data-astryx-theme',s.theme);if(s.mode==='light'||s.mode==='dark')document.documentElement.setAttribute('data-theme',s.mode);else document.documentElement.removeAttribute('data-theme');}}catch(e){}</script>
+<link rel="stylesheet" href="../../vendor/fonts.css">
+<link rel="stylesheet" href="../../vendor/reset.css">
+<link rel="stylesheet" href="../../vendor/astryx.css">
+<link rel="stylesheet" href="../../vendor/themes/neutral.css">
+<link rel="stylesheet" href="../../vendor/themes/butter.css">
+<link rel="stylesheet" href="../../vendor/themes/chocolate.css">
+<link rel="stylesheet" href="../../vendor/themes/matcha.css">
+<link rel="stylesheet" href="../../vendor/themes/stone.css">
+<link rel="stylesheet" href="../../vendor/themes/gothic.css">
+<link rel="stylesheet" href="../../vendor/themes/y2k.css">
+<link rel="stylesheet" href="../../shared/frame.css">
+<style>
+  .actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+  .body{display:flex;flex-direction:column;gap:10px}
+  .body p{margin:0;font-size:13px;line-height:1.7;color:var(--color-text-secondary)}
+  .hint{font-size:12.5px;color:var(--color-text-secondary);line-height:1.6}
+  .kv{display:flex;justify-content:space-between;gap:16px;font-size:13px;
+    background:var(--color-background-card);border:1px solid var(--color-border);
+    border-radius:var(--radius-container);padding:10px 14px}
+  .kv span{color:var(--color-text-secondary)}
+  .kv b{font-weight:600}
+  .status{font-size:12px;color:var(--color-text-secondary);font-family:Consolas,monospace}
+</style>
+</head>
+<body>
+
+<header class="demo-head">
+  <div class="tags">
+    <a class="home" href="../../index.html">← 总览</a>
+    <span class="tag">overlays</span>
+    <span class="tag alt">React 19 · Astryx 0.7.11</span>
+    <span class="tag">@astryxdesign/core/Dialog · AlertDialog</span>
+  </div>
+  <h1>对话框 Dialog</h1>
+  <p>模态决策浮层：Dialog 承担一般确认与短表单，AlertDialog 只在破坏性操作前拦一道。开合由 useState 控制，点遮罩 / Escape 是否生效由 purpose 决定；打开时对话框进入浏览器顶层，覆盖整页。</p>
+  <div class="prefs" data-prefs></div>
+</header>
+
+<div class="stage">
+  <div class="window">
+    <div class="titlebar">
+      <span class="dot" style="background:#ff5f57"></span>
+      <span class="dot" style="background:#febc2e"></span>
+      <span class="dot" style="background:#28c840"></span>
+      <span class="url">meta-design · components/overlays/dialog.html</span>
+    </div>
+    <div class="surface" id="root"></div>
+  </div>
+
+  <aside class="notes">
+    <h2>什么时候用</h2>
+    <ul>
+      <li>一次性决策（发布、覆盖、确认）用 <code>Dialog</code>；带输入的短表单用 <code>purpose="form"</code>，点遮罩不会误丢数据。</li>
+      <li>标题写清楚在问什么，正文说明后果，用户才敢按下按钮。</li>
+      <li>对话框只聚焦单一任务；内容多到装不下，就该换成整页而不是加高。</li>
+    </ul>
+    <h2>不要</h2>
+    <ul>
+      <li class="never">简单消息别弹对话框 —— 能行内显示或用 Toast 的就别打断。</li>
+      <li class="never">不要嵌套对话框；把流程拆成同一个对话框里的步骤。</li>
+      <li class="never">破坏性操作别用普通 Dialog 确认 —— 用 AlertDialog（遮罩不可点、Escape 取消）。</li>
+    </ul>
+    <h2>关键 props</h2>
+    <ul>
+      <li>Dialog：<code>isOpen</code> / <code>onOpenChange</code> 必填；<code>purpose</code> info / form / required 决定关闭方式；<code>width</code> 默认 400</li>
+      <li>DialogHeader：<code>title</code>；传 <code>onOpenChange</code> 才有关闭按钮</li>
+      <li>AlertDialog：<code>title</code> / <code>description</code> / <code>actionLabel</code> / <code>onAction</code> 必填，<b>onAction 不会自动关闭</b>；<code>isActionLoading</code> 转圈；<code>actionVariant</code> 默认 destructive</li>
+    </ul>
+  </aside>
+</div>
+
+<script src="../../vendor/astryx.js"></script>
+<script src="../../shared/frame.js"></script>
+<script>
+  const {React, ReactDOM, htm, Astryx, zhCN} = AstryxKit;
+  const html = htm.bind(React.createElement);
+  const {useState} = React;
+  const {InternationalizationProvider, Button, Dialog, DialogHeader, AlertDialog, Layout, LayoutFooter, TextInput} = Astryx;
+
+  function Demo() {
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [formOpen, setFormOpen] = useState(false);
+    const [name, setName] = useState('周予');
+    const [alertOpen, setAlertOpen] = useState(false);
+    const [alertLoading, setAlertLoading] = useState(false);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [lastAction, setLastAction] = useState('尚未执行操作');
+
+    const confirmDelete = () => {
+      setAlertLoading(true);
+      setTimeout(() => {
+        setAlertLoading(false);
+        setAlertOpen(false);
+        setLastAction('已执行：删除项目');
+      }, 900);
+    };
+
+    return html`
+      <${InternationalizationProvider} locale="zh-CN" messages=${{'zh-CN': zhCN}}>
+
+        <div className="sec">
+          <span className="cap">Dialog · purpose 决定关闭方式</span>
+          <div className="row">
+            <${Button} variant="primary" label="打开信息对话框" onClick=${() => setDialogOpen(true)} />
+            <${Button} label="打开表单对话框 purpose=form" onClick=${() => setFormOpen(true)} />
+            <span className="status">${dialogOpen || formOpen ? '已打开：Esc / 关闭按钮可关；form 的遮罩点击无效' : ''}</span>
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">AlertDialog · 破坏性确认</span>
+          <div className="row">
+            <${Button} variant="destructive" label="删除项目…" onClick=${() => setAlertOpen(true)} />
+            <${Button} label="保存并覆盖…" onClick=${() => setConfirmOpen(true)} />
+            <span className="status">${lastAction}</span>
+          </div>
+        </div>
+
+        <${Dialog} isOpen=${dialogOpen} onOpenChange=${setDialogOpen} purpose="info" width=${460}>
+          <${Layout}
+            header=${html`<${DialogHeader} title="发布画板" subtitle="发布后所有项目成员立即可见" onOpenChange=${setDialogOpen} />`}
+            footer=${html`<${LayoutFooter}>
+              <div className="actions">
+                <${Button} variant="ghost" label="取消" onClick=${() => setDialogOpen(false)} />
+                <${Button} variant="primary" label="发布" onClick=${() => setDialogOpen(false)} />
+              </div>
+            <//>`}
+          >
+            <div className="body">
+              <p>purpose="info"：Escape 和点遮罩都会关闭，适合可以随手跳过的决策。</p>
+              <div className="kv"><span>目标版本</span><b>v2.4 · 草稿</b></div>
+              <div className="kv"><span>可见范围</span><b>项目成员（6 人）</b></div>
+            </div>
+          <//>
+        <//>
+
+        <${Dialog} isOpen=${formOpen} onOpenChange=${setFormOpen} purpose="form" width=${440}>
+          <${Layout}
+            header=${html`<${DialogHeader} title="编辑显示名称" subtitle="会出现在协作记录里" onOpenChange=${setFormOpen} />`}
+            footer=${html`<${LayoutFooter}>
+              <div className="actions">
+                <${Button} variant="ghost" label="取消" onClick=${() => setFormOpen(false)} />
+                <${Button} variant="primary" label="保存" onClick=${() => { setFormOpen(false); setLastAction('已执行：保存显示名称'); }} />
+              </div>
+            <//>`}
+          >
+            <div className="body">
+              <${TextInput} label="显示名称" value=${name} onChange=${setName} placeholder="例如：周予" />
+              <p className="hint">purpose="form"：点遮罩不会关闭，只有 Escape 或底部按钮会 —— 输入到一半误触外部不会丢数据。</p>
+            </div>
+          <//>
+        <//>
+
+        <${AlertDialog}
+          isOpen=${alertOpen}
+          onOpenChange=${setAlertOpen}
+          title="删除「星尘计划」？"
+          description="项目及其 12 个组件将被永久删除，此操作无法撤销。"
+          actionLabel="删除项目"
+          cancelLabel="取消"
+          onAction=${confirmDelete}
+          isActionLoading=${alertLoading}
+        />
+
+        <${AlertDialog}
+          isOpen=${confirmOpen}
+          onOpenChange=${setConfirmOpen}
+          title="保存并覆盖线上版本？"
+          description="v2.3 的内容会被 v2.4 覆盖，协作者刷新后立即看到新版本。"
+          actionLabel="保存更改"
+          actionVariant="primary"
+          cancelLabel="取消"
+          onAction=${() => { setConfirmOpen(false); setLastAction('已执行：保存更改'); }}
+        />
+
+      <//>
+    `;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(html`<${Demo} />`);
+</script>
+
+</body>
+</html>

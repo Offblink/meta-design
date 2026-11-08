@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-astryx-theme="neutral" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>卡片 Card · meta-design</title>
+<script>try{var s=JSON.parse(localStorage.getItem('meta-design')||'null');if(s){if(s.theme)document.documentElement.setAttribute('data-astryx-theme',s.theme);if(s.mode==='light'||s.mode==='dark')document.documentElement.setAttribute('data-theme',s.mode);else document.documentElement.removeAttribute('data-theme');}}catch(e){}</script>
+<link rel="stylesheet" href="../../vendor/fonts.css">
+<link rel="stylesheet" href="../../vendor/reset.css">
+<link rel="stylesheet" href="../../vendor/astryx.css">
+<link rel="stylesheet" href="../../vendor/themes/neutral.css">
+<link rel="stylesheet" href="../../vendor/themes/butter.css">
+<link rel="stylesheet" href="../../vendor/themes/chocolate.css">
+<link rel="stylesheet" href="../../vendor/themes/matcha.css">
+<link rel="stylesheet" href="../../vendor/themes/stone.css">
+<link rel="stylesheet" href="../../vendor/themes/gothic.css">
+<link rel="stylesheet" href="../../vendor/themes/y2k.css">
+<link rel="stylesheet" href="../../shared/frame.css">
+<style>
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;align-items:start}
+  .vcell{display:flex;flex-direction:column;gap:8px}
+  .vcell .cap{font-size:11.5px;color:var(--color-text-secondary);font-family:Consolas,monospace}
+  .cbody{display:flex;flex-direction:column;gap:6px}
+</style>
+</head>
+<body>
+
+<header class="demo-head">
+  <div class="tags">
+    <a class="home" href="../../index.html">← 总览</a>
+    <span class="tag">display</span>
+    <span class="tag alt">React 19 · Astryx 0.7.11</span>
+    <span class="tag">@astryxdesign/core/Card</span>
+  </div>
+  <h1>卡片 Card</h1>
+  <p>装「一件独立的东西」的容器：能单独重排、删除、交互的条目才配一张卡。三个形态各司其职 —— Card 静态容器、ClickableCard 整卡跳转或动作、SelectableCard 多选开关；变体与阴影全部走主题 token，随上方主题与明暗切换即时变色。</p>
+  <div class="prefs" data-prefs></div>
+</header>
+
+<div class="stage">
+  <div class="window">
+    <div class="titlebar">
+      <span class="dot" style="background:#ff5f57"></span>
+      <span class="dot" style="background:#febc2e"></span>
+      <span class="dot" style="background:#28c840"></span>
+      <span class="url">meta-design · components/display/card.html</span>
+    </div>
+    <div class="surface" id="root"></div>
+  </div>
+
+  <aside class="notes">
+    <h2>什么时候用</h2>
+    <ul>
+      <li>先问<b>「这件东西能单独重排或删除吗？」</b>—— 能，才是卡片；不能，它只是页面区块，标题加间距就够了。</li>
+      <li>卡片装离散条目：一份用户资料、一条通知、一个指标、网格里的一个商品；兄弟卡片的 <code>padding</code> 保持一致，网格里才对得齐。</li>
+      <li>整卡可点用 <code>ClickableCard</code>（<code>href</code> 跳转或 <code>onClick</code> 动作），多选勾选用 <code>SelectableCard</code>；需要「头 + 可滚内容 + 底部操作」再上 Layout。</li>
+    </ul>
+    <h2>不要</h2>
+    <ul>
+      <li class="never">默认拿卡片做视觉分组 —— 标题加间距就能建立层级，不必到处加边框。</li>
+      <li class="never">把页面区块（「通用设置」、表单组）包进卡片，或在卡片里再套卡片。</li>
+      <li class="never">用彩色变体表达状态 —— 状态交给 Banner / Badge，彩色卡片只用于分类。</li>
+    </ul>
+    <h2>关键 props</h2>
+    <ul>
+      <li><code>Card</code>：<code>variant</code> default / transparent / muted + 12 个彩色分类变体 · <code>elevation</code> none / low / med / high · <code>padding</code> 间距步进</li>
+      <li><code>ClickableCard</code>：<code>label</code> <b>必填</b>（无障碍名）· <code>href</code> 或 <code>onClick</code> · <code>isDisabled</code>（保留 Tab 停点）</li>
+      <li><code>SelectableCard</code>：<code>label</code> · <code>isSelected</code> · <code>onChange</code> 三项<b>必填</b>，受控切换，多选用 Set 存 id</li>
+    </ul>
+  </aside>
+</div>
+
+<script src="../../vendor/astryx.js"></script>
+<script src="../../shared/frame.js"></script>
+<script>
+  const {React, ReactDOM, htm, Astryx, zhCN} = AstryxKit;
+  const html = htm.bind(React.createElement);
+  const {InternationalizationProvider, Card, ClickableCard, SelectableCard, Heading, Text} = Astryx;
+
+  const OPTIONS = [
+    {id: 'audit', name: '审计日志', desc: '保留 90 天，可导出'},
+    {id: 'sso', name: '单点登录', desc: 'SAML / OIDC 接入'},
+    {id: 'alert', name: '告警通道', desc: '邮件 + Webhook'},
+    {id: 'backup', name: '每日备份', desc: '跨区快照，保留 30 天'},
+  ];
+
+  function Demo() {
+    const [selected, setSelected] = React.useState(() => new Set(['audit']));
+    const [msg, setMsg] = React.useState('');
+
+    const toggle = (id, next) => setSelected(prev => {
+      const s = new Set(prev);
+      if (next) s.add(id); else s.delete(id);
+      return s;
+    });
+
+    return html`
+      <${InternationalizationProvider} locale="zh-CN" messages=${{'zh-CN': zhCN}}>
+        <div className="sec">
+          <span className="cap">Static 静态卡片</span>
+          <div className="cards">
+            <div className="vcell">
+              <${Card}>
+                <div className="cbody">
+                  <${Heading} level=${3}>默认卡片<//>
+                  <${Text} type="supporting">标准背景，适合网格里的一条离散条目。<//>
+                </div>
+              <//>
+              <span className="cap">variant="default"</span>
+            </div>
+            <div className="vcell">
+              <${Card} variant="muted" elevation="low">
+                <div className="cbody">
+                  <${Heading} level=${3}>弱化 + 低阴影<//>
+                  <${Text} type="supporting">muted 降噪，low 抬起一点点层级。<//>
+                </div>
+              <//>
+              <span className="cap">variant="muted" elevation="low"</span>
+            </div>
+            <div className="vcell">
+              <${Card} variant="blue" elevation="med">
+                <div className="cbody">
+                  <${Heading} level=${3}>彩色分类卡<//>
+                  <${Text} type="supporting">彩色变体只做分类，不表示状态。<//>
+                </div>
+              <//>
+              <span className="cap">variant="blue" elevation="med"</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">Clickable 整卡可点</span>
+          <div className="cards">
+            <div className="vcell">
+              <${ClickableCard} label="查看构建详情" href="#" elevation="low">
+                <div className="cbody">
+                  <${Heading} level=${3}>链接卡片<//>
+                  <${Text} type="supporting">href="#" 整卡跳转，elevation 抬起示意可点。<//>
+                </div>
+              <//>
+              <span className="cap">href="#" · elevation="low"</span>
+            </div>
+            <div className="vcell">
+              <${ClickableCard} label="重新运行构建" onClick=${() => setMsg('已触发动作：重新运行构建')} elevation="low">
+                <div className="cbody">
+                  <${Heading} level=${3}>动作卡片<//>
+                  <${Text} type="supporting">onClick 只在卡面触发，内部按钮各管各的。<//>
+                </div>
+              <//>
+              <span className="cap">onClick · elevation="low"</span>
+            </div>
+            <div className="vcell">
+              <${ClickableCard} label="不可用的卡片" isDisabled>
+                <div className="cbody">
+                  <${Heading} level=${3}>禁用态<//>
+                  <${Text} type="supporting">保留 Tab 停点并向读屏播报 disabled。<//>
+                </div>
+              <//>
+              <span className="cap">isDisabled</span>
+            </div>
+          </div>
+          <${Text} type="supporting">${msg || '点中间那张动作卡片试试'}<//>
+        </div>
+
+        <div className="sec">
+          <span className="cap">Selectable 多选卡片</span>
+          <div className="cards">
+            ${OPTIONS.map(o => html`
+              <${SelectableCard} key=${o.id} label=${o.name}
+                isSelected=${selected.has(o.id)}
+                onChange=${next => toggle(o.id, next)}>
+                <div className="cbody">
+                  <${Heading} level=${4}>${o.name}<//>
+                  <${Text} type="supporting">${o.desc}<//>
+                </div>
+              <//>
+            `)}
+          </div>
+          <${Text} type="supporting">已选 ${selected.size} 项：${[...selected].join('、') || '无'}<//>
+        </div>
+      <//>
+    `;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(html`<${Demo} />`);
+</script>
+
+</body>
+</html>

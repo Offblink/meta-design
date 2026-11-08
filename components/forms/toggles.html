@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-astryx-theme="neutral" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>开关与选择 Switch · Checkbox · Radio · meta-design</title>
+<script>try{var s=JSON.parse(localStorage.getItem('meta-design')||'null');if(s){if(s.theme)document.documentElement.setAttribute('data-astryx-theme',s.theme);if(s.mode==='light'||s.mode==='dark')document.documentElement.setAttribute('data-theme',s.mode);else document.documentElement.removeAttribute('data-theme');}}catch(e){}</script>
+<link rel="stylesheet" href="../../vendor/fonts.css">
+<link rel="stylesheet" href="../../vendor/reset.css">
+<link rel="stylesheet" href="../../vendor/astryx.css">
+<link rel="stylesheet" href="../../vendor/themes/neutral.css">
+<link rel="stylesheet" href="../../vendor/themes/butter.css">
+<link rel="stylesheet" href="../../vendor/themes/chocolate.css">
+<link rel="stylesheet" href="../../vendor/themes/matcha.css">
+<link rel="stylesheet" href="../../vendor/themes/stone.css">
+<link rel="stylesheet" href="../../vendor/themes/gothic.css">
+<link rel="stylesheet" href="../../vendor/themes/y2k.css">
+<link rel="stylesheet" href="../../shared/frame.css">
+<style>
+  .cells{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:14px}
+  .cell{display:flex;flex-direction:column;gap:8px;align-content:start;
+    background:var(--color-background-card);border:1px solid var(--color-border);
+    border-radius:var(--radius-container);padding:16px}
+  .cell .cap{font-size:11.5px;color:var(--color-text-secondary);font-family:Consolas,monospace}
+</style>
+</head>
+<body>
+
+<header class="demo-head">
+  <div class="tags">
+    <a class="home" href="../../index.html">← 总览</a>
+    <span class="tag">forms</span>
+    <span class="tag alt">React 19 · Astryx 0.7.11</span>
+    <span class="tag">@astryxdesign/core/Switch</span>
+    <span class="tag">@astryxdesign/core/CheckboxInput</span>
+    <span class="tag">@astryxdesign/core/RadioList</span>
+  </div>
+  <h1>开关与选择 Switch · Checkbox · Radio</h1>
+  <p>三类「二选一」控件的分工：<code>Switch</code> 拨了立即生效，<code>CheckboxInput</code> 是表单里的一项、可能带三态全选，<code>RadioList</code> 一组互斥选项全部摊开。全部受控（<code>value</code> + <code>onChange</code> 存在 React state 里），下面每个开关和选项都能真的点。</p>
+  <div class="prefs" data-prefs></div>
+</header>
+
+<div class="stage">
+  <div class="window">
+    <div class="titlebar">
+      <span class="dot" style="background:#ff5f57"></span>
+      <span class="dot" style="background:#febc2e"></span>
+      <span class="dot" style="background:#28c840"></span>
+      <span class="url">meta-design · components/forms/toggles.html</span>
+    </div>
+    <div class="surface" id="root"></div>
+  </div>
+
+  <aside class="notes">
+    <h2>什么时候用</h2>
+    <ul>
+      <li><b>立即生效的设置用 <code>Switch</code></b>：拨过去就保存，没有「提交」这一步；配简短的 label 说明在控制什么，异步生效用 <code>changeAction</code>（转圈直到 promise 完成）。</li>
+      <li><b>要随表单提交才生效的勾选用 <code>CheckboxInput</code></b>；互斥选择用 <code>RadioList</code>：2–7 个选项、全部可见、给一个合理的默认选中值。</li>
+      <li>「全选 + 部分选」用 <code>CheckboxInput</code> 的 <code>value='indeterminate'</code> 三态：子项有选有没选时，父项显示半选。</li>
+    </ul>
+    <h2>不要</h2>
+    <ul>
+      <li class="never">拿 <code>Switch</code> 承载需要点提交才生效的选项，或让它表示三档状态 —— 它严格 on/off。</li>
+      <li class="never">互斥选项用 Checkbox、长列表用 RadioList —— 分别该用 RadioList 和 Selector；横向 RadioList 超过 4 个会换行难看。</li>
+      <li class="never">给禁用的开关 / 复选 / 单选组包 Tooltip 解释原因 —— 禁用控件吞掉 hover，用 <code>disabledMessage</code>。</li>
+    </ul>
+    <h2>关键 props</h2>
+    <ul>
+      <li><code>Switch</code>：<code>label</code> + <code>value</code> 必填 · <code>changeAction</code> · <code>labelPosition</code> / <code>labelSpacing</code> · <code>size</code> · <code>status</code></li>
+      <li><code>CheckboxInput</code>：<code>label</code> + <code>value</code> 必填（boolean | 'indeterminate'）· <code>description</code> · <code>status</code> · <code>disabledMessage</code></li>
+      <li><code>RadioList</code>：<code>label</code> + <code>value</code> + <code>onChange</code> + <code>children</code> 必填 · <code>orientation</code> · <code>status</code></li>
+      <li><code>RadioListItem</code>：<code>label</code> + <code>value</code> 必填 · <code>description</code> · <code>isDisabled</code></li>
+    </ul>
+  </aside>
+</div>
+
+<script src="../../vendor/astryx.js"></script>
+<script src="../../shared/frame.js"></script>
+<script>
+  const {React, ReactDOM, htm, Astryx, zhCN} = AstryxKit;
+  const html = htm.bind(React.createElement);
+  const {InternationalizationProvider, Switch, CheckboxInput, RadioList, RadioListItem} = Astryx;
+
+  function Demo() {
+    // Switch
+    const [autoSave, setAutoSave] = React.useState(true);
+    const [mailAlert, setMailAlert] = React.useState(false);
+    const [layout, setLayout] = React.useState(true);
+
+    // CheckboxInput：单个 + 全选三态
+    const [terms, setTerms] = React.useState(false);
+    const [usageData, setUsageData] = React.useState(true);
+    const [channels, setChannels] = React.useState({mail: true, sms: false, push: true});
+    const allOn = channels.mail && channels.sms && channels.push;
+    const anyOn = channels.mail || channels.sms || channels.push;
+    const parentValue = allOn ? true : (anyOn ? 'indeterminate' : false);
+    const setChannel = key => checked => setChannels(prev => ({...prev, [key]: checked}));
+
+    // RadioList
+    const [plan, setPlan] = React.useState('pro');
+    const [notify, setNotify] = React.useState('app');
+    const [region, setRegion] = React.useState('east');
+
+    return html`
+      <${InternationalizationProvider} locale="zh-CN" messages=${{'zh-CN': zhCN}}>
+        <div className="sec">
+          <span className="cap">Switch 开关（拨了立即生效）</span>
+          <div className="row">
+            <${Switch}
+              label="自动保存"
+              description="编辑内容后立即写入，无需再点保存按钮。"
+              value=${autoSave}
+              onChange=${v => setAutoSave(v)}
+              width=${320}
+            />
+            <${Switch}
+              label="邮件提醒"
+              description="有新回复时发一封邮件。"
+              size="sm"
+              value=${mailAlert}
+              onChange=${v => setMailAlert(v)}
+              width=${280}
+            />
+            <${Switch}
+              label="标签页铺满整行"
+              description="labelPosition=start，labelSpacing=spread。"
+              labelPosition="start"
+              labelSpacing="spread"
+              value=${layout}
+              onChange=${v => setLayout(v)}
+              width=${340}
+            />
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">Switch 状态</span>
+          <div className="cells">
+            <div className="cell">
+              <${Switch}
+                label="同步到云端"
+                value=${true}
+                onChange=${() => {}}
+                isLoading
+              />
+              <span className="cap">isLoading（拇指内转圈）</span>
+            </div>
+            <div className="cell">
+              <${Switch}
+                label="调试模式"
+                value=${false}
+                onChange=${() => {}}
+                isDisabled
+                disabledMessage="仅组织管理员可以修改此项"
+              />
+              <span className="cap">isDisabled + disabledMessage</span>
+            </div>
+            <div className="cell">
+              <${Switch}
+                label="保持登录"
+                value=${true}
+                onChange=${() => {}}
+                status=${{type: 'warning', message: '关闭后正在运行的任务会被中断'}}
+              />
+              <span className="cap">status = warning</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">CheckboxInput 复选</span>
+          <div className="cells">
+            <div className="cell">
+              <${CheckboxInput}
+                label="我已阅读并同意服务条款"
+                value=${terms}
+                onChange=${v => setTerms(v)}
+                status=${terms ? undefined : {type: 'error', message: '需要先同意服务条款才能继续'}}
+              />
+              <span className="cap">必填校验：未勾选时给出 error</span>
+            </div>
+            <div className="cell">
+              <${CheckboxInput}
+                label="共享使用数据"
+                description="帮助我们改进排版与性能；不含任何输入内容。"
+                value=${usageData}
+                onChange=${v => setUsageData(v)}
+              />
+              <span className="cap">description 补充说明</span>
+            </div>
+            <div className="cell">
+              <${CheckboxInput}
+                label="接收营销邮件"
+                value=${false}
+                onChange=${() => {}}
+                isDisabled
+                disabledMessage="账户未验证，暂不能开启"
+              />
+              <span className="cap">isDisabled + disabledMessage</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">全选三态 indeterminate</span>
+          <div className="row">
+            <${CheckboxInput}
+              label="通知渠道"
+              value=${parentValue}
+              onChange=${checked => setChannels({mail: checked, sms: checked, push: checked})}
+            />
+            <${CheckboxInput} label="邮件" value=${channels.mail} onChange=${setChannel('mail')} />
+            <${CheckboxInput} label="短信" value=${channels.sms} onChange=${setChannel('sms')} />
+            <${CheckboxInput} label="应用内推送" value=${channels.push} onChange=${setChannel('push')} />
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">RadioList 单选（互斥）</span>
+          <div className="cells">
+            <div className="cell">
+              <${RadioList}
+                label="订阅方案"
+                value=${plan}
+                onChange=${v => setPlan(v)}
+                description="先选一个默认方案，随时可以换。"
+                isRequired
+                status=${plan === 'free' ? {type: 'error', message: '免费版本月配额已用完，请换一个方案'} : undefined}
+                width="100%"
+              >
+                <${RadioListItem} value="free" label="免费版" description="每月 100 次导出" />
+                <${RadioListItem} value="pro" label="专业版" description="无限导出 + 版本历史" />
+                <${RadioListItem} value="team" label="团队版" description="正在内测" isDisabled />
+              <//>
+              <span className="cap">vertical · description · 单项禁用 · status</span>
+            </div>
+            <div className="cell">
+              <${RadioList}
+                label="提醒方式"
+                value=${notify}
+                onChange=${v => setNotify(v)}
+                orientation="horizontal"
+                width="100%"
+              >
+                <${RadioListItem} value="app" label="应用内" />
+                <${RadioListItem} value="email" label="邮件" />
+                <${RadioListItem} value="sms" label="短信" />
+              <//>
+              <span className="cap">orientation="horizontal"（≤4 个选项）</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">RadioList 整组禁用</span>
+          <div className="row">
+            <${RadioList}
+              label="发货区域"
+              value=${region}
+              onChange=${() => {}}
+              isDisabled
+              disabledMessage="当前收货地址不支持选择区域"
+              width=${340}
+            >
+              <${RadioListItem} value="east" label="华东仓" description="次日达" />
+              <${RadioListItem} value="north" label="华北仓" description="2–3 天" />
+              <${RadioListItem} value="south" label="华南仓" description="2–3 天" />
+            <//>
+          </div>
+        </div>
+      <//>
+    `;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(html`<${Demo} />`);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-astryx-theme="neutral" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>弹出与提示 Popover · Tooltip · HoverCard · InfoTip · meta-design</title>
+<script>try{var s=JSON.parse(localStorage.getItem('meta-design')||'null');if(s){if(s.theme)document.documentElement.setAttribute('data-astryx-theme',s.theme);if(s.mode==='light'||s.mode==='dark')document.documentElement.setAttribute('data-theme',s.mode);else document.documentElement.removeAttribute('data-theme');}}catch(e){}</script>
+<link rel="stylesheet" href="../../vendor/fonts.css">
+<link rel="stylesheet" href="../../vendor/reset.css">
+<link rel="stylesheet" href="../../vendor/astryx.css">
+<link rel="stylesheet" href="../../vendor/themes/neutral.css">
+<link rel="stylesheet" href="../../vendor/themes/butter.css">
+<link rel="stylesheet" href="../../vendor/themes/chocolate.css">
+<link rel="stylesheet" href="../../vendor/themes/matcha.css">
+<link rel="stylesheet" href="../../vendor/themes/stone.css">
+<link rel="stylesheet" href="../../vendor/themes/gothic.css">
+<link rel="stylesheet" href="../../vendor/themes/y2k.css">
+<link rel="stylesheet" href="../../shared/frame.css">
+<style>
+  .popcard{display:flex;flex-direction:column;gap:8px;max-width:250px}
+  .popcard b{font-size:13.5px}
+  .popcard p{margin:0;font-size:12.5px;line-height:1.6;color:var(--color-text-secondary)}
+  .card{display:flex;gap:12px;align-items:center;max-width:280px}
+  .ava{width:38px;height:38px;border-radius:999px;flex:none;display:flex;align-items:center;
+    justify-content:center;font-weight:700;font-size:15px;color:var(--color-text-accent);
+    background:var(--color-background-card);border:1px solid var(--color-border)}
+  .meta{display:flex;flex-direction:column;gap:2px;font-size:13px}
+  .meta span{font-size:12px;color:var(--color-text-secondary)}
+  .infoline{display:flex;align-items:center;gap:6px;font-size:13.5px}
+  .status{font-size:12px;color:var(--color-text-secondary);font-family:Consolas,monospace}
+</style>
+</head>
+<body>
+
+<header class="demo-head">
+  <div class="tags">
+    <a class="home" href="../../index.html">← 总览</a>
+    <span class="tag">overlays</span>
+    <span class="tag alt">React 19 · Astryx 0.7.11</span>
+    <span class="tag">@astryxdesign/core/Popover · Tooltip · HoverCard · InfoTip</span>
+  </div>
+  <h1>弹出与提示 Popover · Tooltip · HoverCard · InfoTip</h1>
+  <p>锚定在触发元素上的非模态浮层：点击开合的 Popover、悬停一现的 Tooltip、悬停看资料的 HoverCard、常驻行内的 InfoTip。四种都由组件自己定位与播动画，这里只负责内容与触发。</p>
+  <div class="prefs" data-prefs></div>
+</header>
+
+<div class="stage">
+  <div class="window">
+    <div class="titlebar">
+      <span class="dot" style="background:#ff5f57"></span>
+      <span class="dot" style="background:#febc2e"></span>
+      <span class="dot" style="background:#28c840"></span>
+      <span class="url">meta-design · components/overlays/popover.html</span>
+    </div>
+    <div class="surface" id="root"></div>
+  </div>
+
+  <aside class="notes">
+    <h2>什么时候用</h2>
+    <ul>
+      <li>一次点击能完成的次要动作（导出、分享）用 <code>Popover</code>，内容聚焦单一任务，点外部或 Esc 关闭。</li>
+      <li>一句话补充、图标按钮的说明用 <code>Tooltip</code>；正文控制在 140 字符内。</li>
+      <li>需要悬停预览的富内容（成员卡、链接摘要）用 <code>HoverCard</code>；标签旁的字段解释用 <code>InfoTip</code>（自带可聚焦的 i 按钮，点一下钉住）。</li>
+    </ul>
+    <h2>不要</h2>
+    <ul>
+      <li class="never">Tooltip 里放链接或按钮 —— 悬停即消失，用户够不到；换成 HoverCard 或 Popover。</li>
+      <li class="never">关键信息别只放在悬停浮层里 —— 键盘与触屏用户可能永远看不到。</li>
+      <li class="never">不要把 Popover 嵌套进 Popover —— 焦点与关闭顺序会乱。</li>
+    </ul>
+    <h2>关键 props</h2>
+    <ul>
+      <li>Popover：<code>content</code> 必填、触发里要有 button；<code>placement</code> above / below / start / end；<code>alignment</code>；<code>hasLightDismiss</code>、<code>label</code></li>
+      <li>Tooltip：<code>content</code>、<code>delay</code> 默认 200ms、<code>focusTrigger</code>、<code>touchTrigger</code></li>
+      <li>HoverCard：<code>content</code> 必填、<code>delay</code> 300 / <code>hideDelay</code> 200、<code>label</code>（给了就是具名 dialog）</li>
+      <li>InfoTip：<code>content</code> 必填、<code>label</code> 默认「More information」、<code>size</code> xsm / sm / md / lg</li>
+    </ul>
+  </aside>
+</div>
+
+<script src="../../vendor/astryx.js"></script>
+<script src="../../shared/frame.js"></script>
+<script>
+  const {React, ReactDOM, htm, Astryx, zhCN} = AstryxKit;
+  const html = htm.bind(React.createElement);
+  const {InternationalizationProvider, Popover, Tooltip, HoverCard, InfoTip, Button} = Astryx;
+
+  const EXPORT_CONTENT = html`
+    <div className="popcard">
+      <b>导出画板</b>
+      <p>选择格式开始导出；带链接的版本会包含当前视图状态。</p>
+      <div className="row">
+        <${Button} size="sm" label="PNG" />
+        <${Button} size="sm" variant="secondary" label="SVG" />
+        <${Button} size="sm" variant="ghost" label="复制链接" />
+      </div>
+    </div>
+  `;
+
+  const PROFILE_CONTENT = html`
+    <div className="card">
+      <div className="ava">周</div>
+      <div className="meta">
+        <b>周予</b>
+        <span>产品设计 · 上海</span>
+        <span>最近编辑：2 小时前</span>
+      </div>
+    </div>
+  `;
+
+  const MEMBER_TRIGGER = html`
+    <${HoverCard} label="成员资料" placement="below" content=${PROFILE_CONTENT}>周予<//>
+  `;
+
+  function Demo() {
+    return html`
+      <${InternationalizationProvider} locale="zh-CN" messages=${{'zh-CN': zhCN}}>
+
+        <div className="sec">
+          <span className="cap">Popover · 点击触发</span>
+          <div className="row">
+            <${Popover} label="导出选项" placement="below" alignment="start" content=${EXPORT_CONTENT}>
+              <${Button} variant="secondary" label="导出…" />
+            <//>
+            <${Popover} label="快捷键说明" placement="above" alignment="center" width=${240} content=${html`
+              <div className="popcard">
+                <b>键盘也能开</b>
+                <p>Tab 聚焦触发按钮后按 Enter / 空格同样打开，Esc 关闭并把焦点还给按钮。</p>
+              </div>
+            `}>
+              <${Button} variant="ghost" label="快捷键说明" />
+            <//>
+            <span className="status">placement="below" / "above"</span>
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">Tooltip · 悬停 / 聚焦一现</span>
+          <div className="row">
+            <${Tooltip} content="最多可同时导出 5 个画板" placement="above">
+              <${Button} variant="ghost" label="导出上限" />
+            <//>
+            <${Tooltip} content="悬停 200ms 后出现，键盘聚焦同样触发" placement="below" delay=${400}>
+              <${Button} label="delay=400ms" />
+            <//>
+            <span className="status">纯文本提示，不放交互内容</span>
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">HoverCard · 悬停看资料</span>
+          <div className="row">
+            <span style=${{fontSize: '13.5px'}}>由 ${MEMBER_TRIGGER} 最近编辑</span>
+            <span className="status">文字触发自动带虚线下划线</span>
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">InfoTip · 字段旁的常驻解释</span>
+          <div className="row">
+            <span className="infoline">月留存率
+              <${InfoTip} label="关于月留存率" content="过去 30 天内至少活跃一次的用户，占当月新增用户的比例。" />
+            </span>
+            <span className="infoline">自动保存
+              <${InfoTip} label="关于自动保存" content="每次编辑后 3 秒内写入云端，断网时保留本地副本。" size="md" />
+            </span>
+            <span className="status">悬停预览，点击 / Enter 钉住，Esc 或点外部收起</span>
+          </div>
+        </div>
+
+      <//>
+    `;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(html`<${Demo} />`);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-astryx-theme="neutral" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>进度与反馈 ProgressBar · Spinner · Skeleton · EmptyState · Banner · meta-design</title>
+<script>try{var s=JSON.parse(localStorage.getItem('meta-design')||'null');if(s){if(s.theme)document.documentElement.setAttribute('data-astryx-theme',s.theme);if(s.mode==='light'||s.mode==='dark')document.documentElement.setAttribute('data-theme',s.mode);else document.documentElement.removeAttribute('data-theme');}}catch(e){}</script>
+<link rel="stylesheet" href="../../vendor/fonts.css">
+<link rel="stylesheet" href="../../vendor/reset.css">
+<link rel="stylesheet" href="../../vendor/astryx.css">
+<link rel="stylesheet" href="../../vendor/themes/neutral.css">
+<link rel="stylesheet" href="../../vendor/themes/butter.css">
+<link rel="stylesheet" href="../../vendor/themes/chocolate.css">
+<link rel="stylesheet" href="../../vendor/themes/matcha.css">
+<link rel="stylesheet" href="../../vendor/themes/stone.css">
+<link rel="stylesheet" href="../../vendor/themes/gothic.css">
+<link rel="stylesheet" href="../../vendor/themes/y2k.css">
+<link rel="stylesheet" href="../../shared/frame.css">
+<style>
+  .variants{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+  .vcell{display:flex;flex-direction:column;gap:12px;align-items:stretch;
+    background:var(--color-background-card);border:1px solid var(--color-border);
+    border-radius:var(--radius-container);padding:16px}
+  .vcell .cap{font-size:11.5px;color:var(--color-text-secondary);font-family:Consolas,monospace}
+  .spinrow{display:flex;gap:24px;align-items:center;flex-wrap:wrap;
+    background:var(--color-background-card);border:1px solid var(--color-border);
+    border-radius:var(--radius-container);padding:20px}
+  .skelcard{
+    background:var(--color-background-card);border:1px solid var(--color-border);
+    border-radius:var(--radius-container);padding:16px;width:320px;
+    display:flex;gap:12px;
+  }
+  .skelbody{display:flex;flex-direction:column;gap:8px;flex:1}
+  .bannerstack{display:flex;flex-direction:column;gap:12px}
+</style>
+</head>
+<body>
+
+<header class="demo-head">
+  <div class="tags">
+    <a class="home" href="../../index.html">← 总览</a>
+    <span class="tag">feedback</span>
+    <span class="tag alt">React 19 · Astryx 0.7.11</span>
+    <span class="tag">@astryxdesign/core/ProgressBar · Spinner · Skeleton · EmptyState · Banner</span>
+  </div>
+  <h1>进度与反馈 ProgressBar · Spinner · Skeleton · EmptyState · Banner</h1>
+  <p>加载与状态反馈的全家桶：已知总量用 ProgressBar（确定 / 不确定两态），整体加载用 Spinner，形状已知的占位用 Skeleton，空内容用 EmptyState，需要用户看到并处理的常驻消息用 Banner。</p>
+  <div class="prefs" data-prefs></div>
+</header>
+
+<div class="stage">
+  <div class="window">
+    <div class="titlebar">
+      <span class="dot" style="background:#ff5f57"></span>
+      <span class="dot" style="background:#febc2e"></span>
+      <span class="dot" style="background:#28c840"></span>
+      <span class="url">meta-design · components/feedback/progress.html</span>
+    </div>
+    <div class="surface" id="root"></div>
+  </div>
+
+  <aside class="notes">
+    <h2>什么时候用</h2>
+    <ul>
+      <li>总量已知 → <code>ProgressBar</code>（value + max + hasValueLabel）；总量未知 → <code>isIndeterminate</code>。颜色走 <code>variant</code>：accent 常规、success 完成、warning / error 告警。</li>
+      <li>内容尺寸已知 → <code>Skeleton</code>（用 <code>index</code> 错峰出波浪）；整体加载 → <code>Spinner</code> 并给 <code>label</code>；两者别叠在同一块区域。</li>
+      <li>空列表 / 零结果 → <code>EmptyState</code>（title + 下一步按钮）；要用户处理的错误 / 提示 → <code>Banner</code>。</li>
+    </ul>
+    <h2>不要</h2>
+    <ul>
+      <li class="never">瞬时操作用进度条，或同一操作叠多条进度条。</li>
+      <li class="never">Skeleton 无限加载下去 —— 太久就该给错误或空态。</li>
+      <li class="never">自动消失的短消息用 Banner → 那是 Toast；需要立即处理的错误用 EmptyState → 那是 Banner。</li>
+      <li class="never">空态写「暂无数据」这种泛化文案 —— 说清楚<b>什么</b>是空的、然后怎么办。</li>
+    </ul>
+    <h2>关键 props</h2>
+    <ul>
+      <li>ProgressBar：<code>label</code> <b>必填</b>、<code>value</code> / <code>max</code>、<code>isIndeterminate</code>、<code>hasValueLabel</code>、<code>variant</code>、<code>isDisabled</code>、<code>marks</code></li>
+      <li>Spinner：<code>size</code> sm / md / lg / xl、<code>shade</code>、<code>label</code></li>
+      <li>Skeleton：<code>width</code> / <code>height</code>、<code>radius</code>、<code>index</code></li>
+      <li>EmptyState：<code>title</code> <b>必填</b>、<code>description</code>、<code>actions</code>、<code>isCompact</code></li>
+      <li>Banner：<code>status</code> · <code>title</code> <b>必填</b>、<code>description</code>、<code>isDismissable</code>、<code>container</code> card / section</li>
+    </ul>
+  </aside>
+</div>
+
+<script src="../../vendor/astryx.js"></script>
+<script src="../../shared/frame.js"></script>
+<script>
+  const {React, ReactDOM, htm, Astryx, zhCN} = AstryxKit;
+  const html = htm.bind(React.createElement);
+  const {
+    InternationalizationProvider,
+    ProgressBar, Spinner, Skeleton, EmptyState, Banner, Button,
+  } = Astryx;
+
+  /* 确定进度：语义色变体 + 数值标签 + 目标刻度 */
+  function DeterminateDemo() {
+    const [pct, setPct] = React.useState(68);
+    return html`
+      <div className="sec">
+        <span className="cap">ProgressBar · 确定进度（受控 value）</span>
+        <div className="variants">
+          <div className="vcell">
+            <${ProgressBar}
+              label="构建产物上传"
+              value=${pct}
+              hasValueLabel
+              marks=${[{value: 90, label: '目标 90%'}]}
+            />
+            <div className="row">
+              <${Button} size="sm" label="模拟进度" onClick=${() => setPct(p => (p >= 100 ? 12 : p + 12))} />
+            </div>
+            <span className="cap">value=${pct} · marks 目标刻度</span>
+          </div>
+          <div className="vcell">
+            <${ProgressBar} label="成功完成" value=${100} variant="success" hasValueLabel />
+            <span className="cap">variant="success"</span>
+          </div>
+          <div className="vcell">
+            <${ProgressBar} label="配额告警" value=${82} variant="warning" hasValueLabel />
+            <span className="cap">variant="warning"</span>
+          </div>
+          <div className="vcell">
+            <${ProgressBar} label="同步失败" value=${35} variant="error" hasValueLabel />
+            <span className="cap">variant="error"</span>
+          </div>
+          <div className="vcell">
+            <${ProgressBar} label="已取消的任务" value=${50} variant="neutral" isDisabled />
+            <span className="cap">variant="neutral" isDisabled</span>
+          </div>
+          <div className="vcell">
+            <${ProgressBar} label="隐藏文案但读屏可读" value=${60} isLabelHidden hasValueLabel />
+            <span className="cap">isLabelHidden（label 仍可被读屏读出）</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  /* 不确定进度 */
+  function IndeterminateDemo() {
+    return html`
+      <div className="sec">
+        <span className="cap">ProgressBar · 不确定进度（总量未知）</span>
+        <div className="vcell">
+          <${ProgressBar} label="正在连接服务器…" isIndeterminate />
+          <span className="cap">isIndeterminate（value 被忽略）</span>
+        </div>
+      </div>
+    `;
+  }
+
+  /* Spinner 尺寸与文案 */
+  function SpinnerDemo() {
+    return html`
+      <div className="sec">
+        <span className="cap">Spinner · 尺寸与文案</span>
+        <div className="spinrow">
+          <${Spinner} size="sm" />
+          <${Spinner} size="md" />
+          <${Spinner} size="lg" />
+          <${Spinner} size="xl" />
+          <${Spinner} size="md" label="加载中…" />
+          <${Spinner} size="md" shade="subtle" label="subtle 次级" />
+        </div>
+        <span className="cap">size sm / md / lg / xl · shade="subtle" · label 会作为 aria-labelledby</span>
+      </div>
+    `;
+  }
+
+  /* Skeleton 形状占位 */
+  function SkeletonDemo() {
+    return html`
+      <div className="sec">
+        <span className="cap">Skeleton · 按内容形状占位（index 错峰）</span>
+        <div className="skelcard">
+          <${Skeleton} width=${48} height=${48} radius="rounded" index=${0} />
+          <div className="skelbody">
+            <${Skeleton} width="60%" height=${16} index=${1} />
+            <${Skeleton} width="100%" height=${12} index=${2} />
+            <${Skeleton} width="85%" height=${12} index=${3} />
+            <${Skeleton} width=${96} height=${28} radius=${2} index=${4} />
+          </div>
+        </div>
+        <span className="cap">radius="rounded"（头像）· index 0→4 形成波浪</span>
+      </div>
+    `;
+  }
+
+  /* 空态 */
+  function EmptyDemo() {
+    return html`
+      <div className="sec">
+        <span className="cap">EmptyState · 空态（标题 + 下一步）</span>
+        <div className="variants">
+          <div className="vcell">
+            <${EmptyState}
+              title="还没有项目"
+              description="创建第一个项目，把设计稿、组件与规范集中管理。"
+              actions=${html`
+                <${Button} variant="primary" label="新建项目" />
+                <${Button} variant="secondary" label="从模板导入" />
+              `}
+            />
+            <span className="cap">title + description + actions</span>
+          </div>
+          <div className="vcell">
+            <${EmptyState}
+              title="没有匹配的搜索结果"
+              description="换个关键词，或清除筛选条件重试。"
+              isCompact
+              actions=${html`<${Button} variant="ghost" label="清除筛选" />`}
+            />
+            <span className="cap">isCompact（卡片 / 侧栏等窄区域）</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  /* 常驻消息 Banner */
+  function BannerDemo() {
+    const [showInfo, setShowInfo] = React.useState(true);
+    return html`
+      <div className="sec">
+        <span className="cap">Banner · 常驻状态消息（info 可关闭）</span>
+        <div className="bannerstack">
+          ${showInfo && html`
+            <${Banner}
+              status="info"
+              title="v0.7.11 已发布"
+              description="新增 Grid 响应式列与 Pagination input 变体，详见更新日志。"
+              isDismissable
+              onDismiss=${() => setShowInfo(false)}
+              endContent=${html`<${Button} size="sm" variant="secondary" label="查看更新" />`}
+            />
+          `}
+          <${Banner}
+            status="warning"
+            title="配额即将用尽"
+            description="本月构建时长已使用 82%，超出后队列将降速。"
+            endContent=${html`<${Button} size="sm" variant="secondary" label="管理配额" />`}
+          />
+          <${Banner}
+            status="error"
+            title="部署失败：3 个字段校验未通过"
+            description="修正下方字段后重试；错误清单保持展开，便于逐项处理。"
+            collapsible=${false}
+            endContent=${html`<${Button} size="sm" variant="destructive" label="重试部署" />`}
+          />
+          <${Banner}
+            status="success"
+            title="设置已保存"
+            isDismissable
+          />
+          ${!showInfo && html`
+            <div className="row">
+              <${Button} size="sm" variant="ghost" label="重新显示 info 横幅" onClick=${() => setShowInfo(true)} />
+            </div>
+          `}
+        </div>
+        <span className="cap">status info / warning / error / success · isDismissable · collapsible=${'{false}'}</span>
+      </div>
+    `;
+  }
+
+  function Demo() {
+    return html`
+      <${InternationalizationProvider} locale="zh-CN" messages=${{'zh-CN': zhCN}}>
+        <${DeterminateDemo} />
+        <${IndeterminateDemo} />
+        <${SpinnerDemo} />
+        <${SkeletonDemo} />
+        <${EmptyDemo} />
+        <${BannerDemo} />
+      <//>
+    `;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(html`<${Demo} />`);
+</script>
+
+</body>
+</html>

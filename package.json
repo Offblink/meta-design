@@ -1,0 +1,26 @@
+{
+  "name": "meta-design",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Astryx (Meta design system) static component gallery - zero build, file:// ready",
+  "scripts": {
+    "build": "node scripts/build.mjs"
+  },
+  "dependencies": {
+    "@astryxdesign/cli": "^0.7.11",
+    "@astryxdesign/core": "^0.7.11",
+    "@astryxdesign/theme-butter": "^0.7.11",
+    "@astryxdesign/theme-chocolate": "^0.7.11",
+    "@astryxdesign/theme-gothic": "^0.7.11",
+    "@astryxdesign/theme-matcha": "^0.7.11",
+    "@astryxdesign/theme-neutral": "^0.7.11",
+    "@astryxdesign/theme-stone": "^0.7.11",
+    "@astryxdesign/theme-y2k": "^0.7.11",
+    "@fontsource/figtree": "^5.3.0",
+    "@stylexjs/stylex": "^0.19.1",
+    "esbuild": "^0.28.2",
+    "htm": "^3.1.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  }
+}

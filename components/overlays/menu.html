@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-astryx-theme="neutral" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>菜单 DropdownMenu · ContextMenu · meta-design</title>
+<script>try{var s=JSON.parse(localStorage.getItem('meta-design')||'null');if(s){if(s.theme)document.documentElement.setAttribute('data-astryx-theme',s.theme);if(s.mode==='light'||s.mode==='dark')document.documentElement.setAttribute('data-theme',s.mode);else document.documentElement.removeAttribute('data-theme');}}catch(e){}</script>
+<link rel="stylesheet" href="../../vendor/fonts.css">
+<link rel="stylesheet" href="../../vendor/reset.css">
+<link rel="stylesheet" href="../../vendor/astryx.css">
+<link rel="stylesheet" href="../../vendor/themes/neutral.css">
+<link rel="stylesheet" href="../../vendor/themes/butter.css">
+<link rel="stylesheet" href="../../vendor/themes/chocolate.css">
+<link rel="stylesheet" href="../../vendor/themes/matcha.css">
+<link rel="stylesheet" href="../../vendor/themes/stone.css">
+<link rel="stylesheet" href="../../vendor/themes/gothic.css">
+<link rel="stylesheet" href="../../vendor/themes/y2k.css">
+<link rel="stylesheet" href="../../shared/frame.css">
+<style>
+  .hint{font-size:11.5px;color:var(--color-text-secondary);font-family:Consolas,monospace}
+  .status{font-size:12.5px;color:var(--color-text-secondary)}
+  .ctxzone{
+    display:flex;align-items:center;justify-content:center;text-align:center;
+    min-height:150px;padding:26px;cursor:context-menu;
+    background:var(--color-background-card);border:1.5px dashed var(--color-border);
+    border-radius:var(--radius-container);color:var(--color-text-secondary);
+    font-size:13.5px;line-height:1.7;
+  }
+  .ctxzone:hover{border-color:var(--color-text-secondary)}
+</style>
+</head>
+<body>
+
+<header class="demo-head">
+  <div class="tags">
+    <a class="home" href="../../index.html">← 总览</a>
+    <span class="tag">overlays</span>
+    <span class="tag alt">React 19 · Astryx 0.7.11</span>
+    <span class="tag">@astryxdesign/core/DropdownMenu · ContextMenu</span>
+  </div>
+  <h1>菜单 DropdownMenu · ContextMenu</h1>
+  <p>两组动作列表：DropdownMenu 由按钮按开（鼠标按下即开，可拖进菜单选择），ContextMenu 由右键 / 长按在光标处打开。两者都用 items 数组声明分组、分隔线与破坏性项，选中即执行并自动关闭。</p>
+  <div class="prefs" data-prefs></div>
+</header>
+
+<div class="stage">
+  <div class="window">
+    <div class="titlebar">
+      <span class="dot" style="background:#ff5f57"></span>
+      <span class="dot" style="background:#febc2e"></span>
+      <span class="dot" style="background:#28c840"></span>
+      <span class="url">meta-design · components/overlays/menu.html</span>
+    </div>
+    <div class="surface" id="root"></div>
+  </div>
+
+  <aside class="notes">
+    <h2>什么时候用</h2>
+    <ul>
+      <li>一屏里的次要动作收进 <code>DropdownMenu</code>：分组（<code>type:"section"</code>）+ 分隔线（<code>type:"divider"</code>）让选项可扫读。</li>
+      <li>右键 / 长按某块区域的就地操作用 <code>ContextMenu</code>；包住触发区域即可，菜单出现在光标处。</li>
+      <li>破坏性项标 <code>variant:"destructive"</code>，禁用项标 <code>isDisabled</code>；动作型文案写「导出为 PNG」而不是「确定」。</li>
+    </ul>
+    <h2>不要</h2>
+    <ul>
+      <li class="never">别把导航塞进菜单 —— 跳页面用导航组件。</li>
+      <li class="never">单个菜单别超过 10–12 项不分组；重要操作别只挂在右键上（键盘用户按不出来）。</li>
+      <li class="never">非行内动作别混进 rows —— 按钮、开关放 <code>header</code> / <code>footer</code> 插槽。</li>
+    </ul>
+    <h2>关键 props</h2>
+    <ul>
+      <li>DropdownMenu：<code>items</code> 必填（action / divider / section 三种条目）；<code>button</code> 是触发按钮的 Button props（不含 onClick）；<code>placement</code> 默认 below；<code>menuWidth</code>、<code>hasChevron</code> 默认 true</li>
+      <li>条目字段：<code>label</code> / <code>onClick</code> / <code>variant</code> / <code>isDisabled</code> / <code>endContent</code>（尾部快捷键提示）</li>
+      <li>ContextMenu：<code>children</code> 必填是触发区域；<code>items</code> 与 <code>menuContent</code> 二选一；<code>label</code>、<code>menuWidth</code> 默认 160px、<code>presentation</code> 默认 popover</li>
+    </ul>
+  </aside>
+</div>
+
+<script src="../../vendor/astryx.js"></script>
+<script src="../../shared/frame.js"></script>
+<script>
+  const {React, ReactDOM, htm, Astryx, zhCN} = AstryxKit;
+  const html = htm.bind(React.createElement);
+  const {useState} = React;
+  const {InternationalizationProvider, DropdownMenu, ContextMenu} = Astryx;
+
+  function Demo() {
+    const [last, setLast] = useState('尚未执行操作');
+
+    const menuItems = [
+      {type: 'section', title: '导出', items: [
+        {label: '导出为 PNG', onClick: () => setLast('已执行：导出为 PNG')},
+        {label: '导出为 SVG', onClick: () => setLast('已执行：导出为 SVG')},
+      ]},
+      {type: 'divider'},
+      {label: '复制链接', endContent: html`<span className="hint">Ctrl C</span>`, onClick: () => setLast('已执行：复制链接')},
+      {label: '共享给协作者', isDisabled: true},
+      {label: '删除草稿', variant: 'destructive', onClick: () => setLast('已执行：删除草稿')},
+    ];
+
+    const ctxItems = [
+      {label: '重命名', onClick: () => setLast('已执行：重命名')},
+      {label: '复制', onClick: () => setLast('已执行：复制')},
+      {type: 'divider'},
+      {label: '移到回收站', variant: 'destructive', onClick: () => setLast('已执行：移到回收站')},
+    ];
+
+    return html`
+      <${InternationalizationProvider} locale="zh-CN" messages=${{'zh-CN': zhCN}}>
+
+        <div className="sec">
+          <span className="cap">DropdownMenu · 按钮触发</span>
+          <div className="row">
+            <${DropdownMenu}
+              button=${{label: '文件操作', variant: 'secondary'}}
+              items=${menuItems}
+              menuWidth=${220}
+              placement="below"
+              alignment="start"
+            />
+            <span className="status">${last}</span>
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">ContextMenu · 右键触发</span>
+          <${ContextMenu} items=${ctxItems} label="画板区域操作" menuWidth=${200}>
+            <div className="ctxzone">在此区域<b>右键</b>（触屏上长按）打开上下文菜单</div>
+          <//>
+        </div>
+
+      <//>
+    `;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(html`<${Demo} />`);
+</script>
+
+</body>
+</html>

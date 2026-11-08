@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-astryx-theme="neutral" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>meta-design · React 静态组件画廊</title>
+<script>try{var s=JSON.parse(localStorage.getItem('meta-design')||'null');if(s){if(s.theme)document.documentElement.setAttribute('data-astryx-theme',s.theme);if(s.mode==='light'||s.mode==='dark')document.documentElement.setAttribute('data-theme',s.mode);else document.documentElement.removeAttribute('data-theme');}}catch(e){}</script>
+<link rel="stylesheet" href="vendor/fonts.css">
+<link rel="stylesheet" href="shared/gallery.css">
+</head>
+<body>
+
+<header>
+  <h1><span>meta-design</span></h1>
+  <p class="sub">
+    <b>React 版静态组件画廊</b> —— 把 Meta 开源设计系统
+    <b>Astryx</b>（120 个组件 · 7 套主题 · MIT）搬进双击即开的 HTML。
+    React 19 + Astryx 运行时已预打包进 <code>vendor/astryx.js</code>，<b>无需 npm、无需构建、file:// 直接可用</b>；
+    七套主题 CSS 全量预载，切主题 = 换一个 html 属性。
+  </p>
+  <div class="prefs" data-prefs></div>
+</header>
+
+<div class="group">
+  <h2><span class="sw" style="background:linear-gradient(135deg,#a9a4ff,#9ff0d8)"></span>Actions</h2>
+  <div class="desc">触发操作的控件</div>
+  <div class="grid">
+    <a class="card" href="components/actions/button.html"><div class="n">按钮</div><div class="id">button</div><div class="d">四变体 × 三尺寸 × 加载 / 禁用 / tooltip 状态</div></a>
+  </div>
+</div>
+
+<div class="group">
+  <h2><span class="sw" style="background:#6750A4"></span>Forms</h2>
+  <div class="desc">输入、开关、数值 —— 表单三件套</div>
+  <div class="grid">
+    <a class="card" href="components/forms/text-input.html"><div class="n">文本输入</div><div class="id">text-input</div><div class="d">Field 包裹的单行 / 多行输入，label、帮助与错误态</div></a>
+    <a class="card" href="components/forms/toggles.html"><div class="n">开关与选择</div><div class="id">toggles</div><div class="d">Switch 弹簧开关、CheckboxInput、RadioList 单选组</div></a>
+    <a class="card" href="components/forms/numbers.html"><div class="n">数值与分段</div><div class="id">numbers</div><div class="d">Slider 滑杆、NumberInput 步进、SegmentedControl 分段</div></a>
+  </div>
+</div>
+
+<div class="group">
+  <h2><span class="sw" style="background:#2d6a4f"></span>Display</h2>
+  <div class="desc">数据与内容展示</div>
+  <div class="grid">
+    <a class="card" href="components/display/card.html"><div class="n">卡片</div><div class="id">card</div><div class="d">Card / ClickableCard / SelectableCard 三态卡片</div></a>
+    <a class="card" href="components/display/table.html"><div class="n">表格</div><div class="id">table</div><div class="d">列配置驱动的 Table，表头、对齐与行密度</div></a>
+    <a class="card" href="components/display/list.html"><div class="n">列表</div><div class="id">list</div><div class="d">List + Item 主从列表、MetadataList 键值对</div></a>
+    <a class="card" href="components/display/badge.html"><div class="n">徽标与头像</div><div class="id">badge</div><div class="d">Badge 十四色、StatusDot 状态点、Indicator 角标、Avatar 组</div></a>
+    <a class="card" href="components/display/text.html"><div class="n">排版</div><div class="id">text</div><div class="d">Heading 层级、Text、Blockquote、Link、Kbd 按键</div></a>
+  </div>
+</div>
+
+<div class="group">
+  <h2><span class="sw" style="background:#b5651d"></span>Overlays</h2>
+  <div class="desc">浮在内容之上的一切</div>
+  <div class="grid">
+    <a class="card" href="components/overlays/dialog.html"><div class="n">对话框</div><div class="id">dialog</div><div class="d">Dialog 通用弹窗 + AlertDialog 确认框</div></a>
+    <a class="card" href="components/overlays/sheets.html"><div class="n">抽屉与底部面板</div><div class="id">sheets</div><div class="d">Drawer 侧滑 + BottomSheet 底部弹出</div></a>
+    <a class="card" href="components/overlays/popover.html"><div class="n">气泡浮层</div><div class="id">popover</div><div class="d">Popover / Tooltip / HoverCard / InfoTip 轻量浮层</div></a>
+    <a class="card" href="components/overlays/menu.html"><div class="n">菜单</div><div class="id">menu</div><div class="d">DropdownMenu 下拉菜单 + ContextMenu 右键菜单</div></a>
+    <a class="card" href="components/overlays/toast.html"><div class="n">轻提示</div><div class="id">toast</div><div class="d">Toast 操作反馈，进出队列与自动消退</div></a>
+  </div>
+</div>
+
+<div class="group">
+  <h2><span class="sw" style="background:#1d3557"></span>Navigation</h2>
+  <div class="desc">在页面与层级间移动</div>
+  <div class="grid">
+    <a class="card" href="components/nav/tabs.html"><div class="n">标签页</div><div class="id">tabs</div><div class="d">TabList 面板切换，受控选中态</div></a>
+    <a class="card" href="components/nav/pagination.html"><div class="n">面包屑与分页</div><div class="id">pagination</div><div class="d">Breadcrumbs 层级路径 + Pagination 翻页</div></a>
+    <a class="card" href="components/nav/side-nav.html"><div class="n">侧边导航</div><div class="id">side-nav</div><div class="d">SideNav / NavItem 选中态与层级缩进</div></a>
+  </div>
+</div>
+
+<div class="group">
+  <h2><span class="sw" style="background:#4a4e69"></span>Layout &amp; Feedback</h2>
+  <div class="desc">骨架与状态反馈</div>
+  <div class="grid">
+    <a class="card" href="components/layout/primitives.html"><div class="n">布局原语</div><div class="id">primitives</div><div class="d">Stack / Grid / Divider / Section 间距与栅格范式</div></a>
+    <a class="card" href="components/feedback/progress.html"><div class="n">进度与骨架</div><div class="id">progress</div><div class="d">ProgressBar / Spinner / Skeleton / EmptyState / Banner</div></a>
+  </div>
+</div>
+
+<div class="group">
+  <h2><span class="sw" style="background:linear-gradient(135deg,#f2c14e,#e07a5f)"></span>Themes</h2>
+  <div class="desc">七套主题 · 198 个 token · 明暗双模</div>
+  <div class="grid">
+    <a class="card" href="components/themes/tokens.html"><div class="n">主题与 Token</div><div class="id">tokens</div><div class="d">色彩角色、排版阶梯、圆角阴影 —— 主题系统的解剖</div></a>
+  </div>
+</div>
+
+<footer>
+  Astryx <b>0.7.11</b>（Meta 开源设计系统，MIT）· React 19.3 · htm 3.1 · 本地预打包 esbuild IIFE · 无运行时网络请求<br>
+  重建 vendor：<code>npm run build</code>（仅依赖升级时需要）
+</footer>
+
+<script src="shared/frame.js"></script>
+</body>
+</html>

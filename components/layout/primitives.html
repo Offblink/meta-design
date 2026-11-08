@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-astryx-theme="neutral" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>布局原语 Stack · HStack · VStack · Grid · meta-design</title>
+<script>try{var s=JSON.parse(localStorage.getItem('meta-design')||'null');if(s){if(s.theme)document.documentElement.setAttribute('data-astryx-theme',s.theme);if(s.mode==='light'||s.mode==='dark')document.documentElement.setAttribute('data-theme',s.mode);else document.documentElement.removeAttribute('data-theme');}}catch(e){}</script>
+<link rel="stylesheet" href="../../vendor/fonts.css">
+<link rel="stylesheet" href="../../vendor/reset.css">
+<link rel="stylesheet" href="../../vendor/astryx.css">
+<link rel="stylesheet" href="../../vendor/themes/neutral.css">
+<link rel="stylesheet" href="../../vendor/themes/butter.css">
+<link rel="stylesheet" href="../../vendor/themes/chocolate.css">
+<link rel="stylesheet" href="../../vendor/themes/matcha.css">
+<link rel="stylesheet" href="../../vendor/themes/stone.css">
+<link rel="stylesheet" href="../../vendor/themes/gothic.css">
+<link rel="stylesheet" href="../../vendor/themes/y2k.css">
+<link rel="stylesheet" href="../../shared/frame.css">
+<style>
+  .cap-mono{font-size:11.5px;color:var(--color-text-secondary);font-family:Consolas,monospace}
+  .tile{
+    background:var(--color-background-subtle);border:1px solid var(--color-border);
+    border-radius:var(--radius-container);padding:12px 16px;
+    font-size:12.5px;color:var(--color-text-secondary);min-width:64px;text-align:center;
+  }
+  .tile.accent{background:var(--color-accent-subtle);color:var(--color-accent);border-color:var(--color-accent)}
+  .frame{
+    border:1px dashed var(--color-border);border-radius:var(--radius-container);
+    padding:12px;background:var(--color-background-card);
+  }
+  .split{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;align-items:start}
+  .gcell{
+    background:var(--color-background-subtle);border:1px solid var(--color-border);
+    border-radius:var(--radius-container);padding:14px;font-size:12.5px;
+    color:var(--color-text-secondary);text-align:center;
+  }
+</style>
+</head>
+<body>
+
+<header class="demo-head">
+  <div class="tags">
+    <a class="home" href="../../index.html">← 总览</a>
+    <span class="tag">layout</span>
+    <span class="tag alt">React 19 · Astryx 0.7.11</span>
+    <span class="tag">@astryxdesign/core/Stack · Grid · Divider · Section</span>
+  </div>
+  <h1>布局原语 Stack · HStack · VStack · Grid · Divider · Section</h1>
+  <p>整套 Astryx 布局的范式参考页：单轴排列走 Stack（HStack / VStack 是预配置包装），二维网格走 Grid，分隔走 Divider，页面分区走 Section。间距一律用 0–10 的刻度数字（gap={4}），不手写 margin。</p>
+  <div class="prefs" data-prefs></div>
+</header>
+
+<div class="stage">
+  <div class="window">
+    <div class="titlebar">
+      <span class="dot" style="background:#ff5f57"></span>
+      <span class="dot" style="background:#febc2e"></span>
+      <span class="dot" style="background:#28c840"></span>
+      <span class="url">meta-design · components/layout/primitives.html</span>
+    </div>
+    <div class="surface" id="root"></div>
+  </div>
+
+  <aside class="notes">
+    <h2>什么时候用</h2>
+    <ul>
+      <li>间距与对齐<b>只走刻度 props</b>：<code>gap</code> / <code>padding</code> 传数字表达式（gap={4}），不手写 margin。</li>
+      <li>单轴排列用 <code>Stack</code>（direction="horizontal" / "vertical"）或其包装 <code>HStack</code> / <code>VStack</code>；一个子项吃掉剩余空间用 <code>StackItem size="fill"</code>。</li>
+      <li>多列布局用 <code>Grid</code>：<code>columns={{minWidth: 240, max: 4}}</code> 自动回流；分区用 <code>Section</code>，分区之间用 <code>Divider</code> 或 Section 的 <code>dividers</code>。</li>
+    </ul>
+    <h2>不要</h2>
+    <ul>
+      <li class="never">手写 CSS grid，或用 HStack + wrap 冒充网格 —— 那是 Grid 的活。</li>
+      <li class="never">Stack 套 Stack —— 先试 <code>wrap="wrap"</code> 让内容换行。</li>
+      <li class="never">需要适配手机的行用 <code>columns={4}</code> —— 固定数字永不回流，手机上会挤成四条。</li>
+      <li class="never">该用 Section 的页面分区用 Card —— Card 是离散条目（一条通知、一张名片）。</li>
+    </ul>
+    <h2>关键 props</h2>
+    <ul>
+      <li>Stack / HStack / VStack：<code>gap</code> · <code>padding</code> 刻度数字，<code>hAlign</code> / <code>vAlign</code>，<code>justify</code> / <code>align</code> 别名，<code>wrap</code></li>
+      <li>Stack <code>direction</code> horizontal / vertical（<b>不是 "row"</b>）；justify 用 <code>'between'</code> 不是 'space-between'</li>
+      <li>Grid：<code>columns</code> 数字或 <code>{minWidth, max, repeat}</code>、<code>gap</code> / <code>rowGap</code> / <code>columnGap</code>、<code>align</code> / <code>justify</code></li>
+      <li>Divider：<code>orientation</code>、<code>variant</code> subtle / strong、<code>label</code>、<code>isFullBleed</code></li>
+      <li>Section：<code>variant</code> section / transparent / muted、<code>padding</code>、<code>dividers</code></li>
+    </ul>
+  </aside>
+</div>
+
+<script src="../../vendor/astryx.js"></script>
+<script src="../../shared/frame.js"></script>
+<script>
+  const {React, ReactDOM, htm, Astryx, zhCN} = AstryxKit;
+  const html = htm.bind(React.createElement);
+  const {
+    InternationalizationProvider,
+    Stack, StackItem, HStack, VStack,
+    Grid, Divider, Section, Heading, Text,
+  } = Astryx;
+
+  const ALIGNS = ['start', 'center', 'end', 'between'];
+
+  function Tile(props) {
+    return html`<div className=${'tile' + (props.accent ? ' accent' : '')}>${props.children}</div>`;
+  }
+
+  /* Stack：direction + gap */
+  function StackDemo() {
+    return html`
+      <div className="sec">
+        <span className="cap">Stack · direction + gap</span>
+        <div className="split">
+          <div className="frame">
+            <div className="cap-mono" style=${{marginBottom: '8px'}}>direction="vertical" gap={2}</div>
+            <${Stack} direction="vertical" gap={2}>
+              <${Tile}>A<//>
+              <${Tile}>B<//>
+              <${Tile}>C<//>
+            <//>
+          </div>
+          <div className="frame">
+            <div className="cap-mono" style=${{marginBottom: '8px'}}>direction="horizontal" gap={4}</div>
+            <${Stack} direction="horizontal" gap={4}>
+              <${Tile}>A<//>
+              <${Tile}>B<//>
+              <${Tile}>C<//>
+            <//>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  /* HStack：主轴/交叉轴对齐 + wrap + StackItem fill */
+  function HStackDemo() {
+    return html`
+      <div className="sec">
+        <span className="cap">HStack · hAlign 主轴对齐</span>
+        <div className="split">
+          ${ALIGNS.map(a => html`
+            <div className="frame" key=${a}>
+              <div className="cap-mono" style=${{marginBottom: '8px'}}>hAlign="${a}" gap={2}</div>
+              <${HStack} hAlign=${a} gap={2}>
+                <${Tile}>1<//>
+                <${Tile}>2<//>
+                <${Tile} accent>3<//>
+              <//>
+            </div>
+          `)}
+        </div>
+      </div>
+
+      <div className="sec">
+        <span className="cap">StackItem size="fill" · 一个子项吃掉剩余空间</span>
+        <div className="frame">
+          <${HStack} gap={2} width="100%">
+            <${Tile}>固定<//>
+            <${StackItem} size="fill"><div className="tile accent">fill 撑满剩余宽度</div><//>
+            <${Tile}>固定<//>
+          <//>
+        </div>
+      </div>
+    `;
+  }
+
+  /* VStack：gap + justify（主轴）/ hAlign（交叉轴） */
+  function VStackDemo() {
+    return html`
+      <div className="sec">
+        <span className="cap">VStack · gap 与对齐</span>
+        <div className="split">
+          <div className="frame">
+            <div className="cap-mono" style=${{marginBottom: '8px'}}>gap={3} 默认（交叉轴 stretch）</div>
+            <${VStack} gap={3}>
+              <${Tile}>上<//>
+              <${Tile}>中<//>
+              <${Tile}>下<//>
+            <//>
+          </div>
+          <div className="frame">
+            <div className="cap-mono" style=${{marginBottom: '8px'}}>justify="between" hAlign="end" height=200</div>
+            <${VStack} gap={3} justify="between" hAlign="end" height=${200}>
+              <${Tile}>顶端<//>
+              <${Tile}>底端<//>
+            <//>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  /* Grid：响应式列 vs 固定列 */
+  function GridDemo() {
+    const cells = ['一', '二', '三', '四', '五', '六'];
+    return html`
+      <div className="sec">
+        <span className="cap">Grid · 响应式列 columns={{minWidth, max}}</span>
+        <div className="frame">
+          <div className="cap-mono" style=${{marginBottom: '8px'}}>columns=${'{minWidth: 150, max: 4}'} gap={3}</div>
+          <${Grid} columns=${{minWidth: 150, max: 4}} gap={3}>
+            ${cells.map(c => html`<div className="gcell" key=${c}>格 ${c}</div>`)}
+          <//>
+        </div>
+        <div className="frame">
+          <div className="cap-mono" style=${{marginBottom: '8px'}}>columns={3} gap={3}（固定三列，不回流）</div>
+          <${Grid} columns=${3} gap=${3} align="center">
+            ${cells.slice(0, 3).map(c => html`<div className="gcell" key=${c}>格 ${c}</div>`)}
+          <//>
+        </div>
+      </div>
+    `;
+  }
+
+  /* Divider：方向 / 变体 / 标签 */
+  function DividerDemo() {
+    return html`
+      <div className="sec">
+        <span className="cap">Divider · subtle / strong / label / vertical</span>
+        <div className="frame">
+          <div className="cap-mono">variant="subtle"（默认）</div>
+          <${Divider} />
+          <div className="cap-mono" style=${{marginTop: '10px'}}>variant="strong" + label</div>
+          <${Divider} variant="strong" label="分组标题" />
+          <div className="cap-mono" style=${{marginTop: '10px'}}>orientation="vertical"（横排容器里）</div>
+          <${HStack} gap={3} style=${{height: '48px', alignItems: 'center'}}>
+            <${Tile}>左<//>
+            <${Divider} orientation="vertical" />
+            <${Tile}>右<//>
+          <//>
+        </div>
+      </div>
+    `;
+  }
+
+  /* Section：背景变体 / padding / dividers */
+  function SectionDemo() {
+    return html`
+      <div className="sec">
+        <span className="cap">Section · variant / padding / dividers</span>
+        <div className="frame">
+          <${Section} variant="muted" padding=${4} dividers=${['bottom']}>
+            <${VStack} gap={2}>
+              <${Heading} level=${3}>muted 变体的分区</${Heading}>
+              <${Text}>variant="muted" 用于把注意力引到某个区域；padding 走刻度（此处 padding={4}），dividers=["bottom"] 给底边加分隔线。</${Text}>
+              <${HStack} gap=${2}>
+                <${Tile}>区块内容<//>
+                <${Tile}>区块内容<//>
+              <//>
+            <//>
+          <//>
+        </div>
+        <div className="frame">
+          <${Section} variant="section" padding=${3}>
+            <${VStack} gap=${2}>
+              <${Heading} level=${3}>默认 variant="section"</${Heading}>
+              <${Text}>页面级分区用 Section；同底色分区之间加 Divider 或 dividers 属性拉开层次。</${Text}>
+            <//>
+          <//>
+        </div>
+      </div>
+    `;
+  }
+
+  function Demo() {
+    return html`
+      <${InternationalizationProvider} locale="zh-CN" messages=${{'zh-CN': zhCN}}>
+        <${StackDemo} />
+        <${HStackDemo} />
+        <${VStackDemo} />
+        <${GridDemo} />
+        <${DividerDemo} />
+        <${SectionDemo} />
+      <//>
+    `;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(html`<${Demo} />`);
+</script>
+
+</body>
+</html>

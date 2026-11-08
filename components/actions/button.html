@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-astryx-theme="neutral" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>按钮 Button · meta-design</title>
+<script>try{var s=JSON.parse(localStorage.getItem('meta-design')||'null');if(s){if(s.theme)document.documentElement.setAttribute('data-astryx-theme',s.theme);if(s.mode==='light'||s.mode==='dark')document.documentElement.setAttribute('data-theme',s.mode);else document.documentElement.removeAttribute('data-theme');}}catch(e){}</script>
+<link rel="stylesheet" href="../../vendor/fonts.css">
+<link rel="stylesheet" href="../../vendor/reset.css">
+<link rel="stylesheet" href="../../vendor/astryx.css">
+<link rel="stylesheet" href="../../vendor/themes/neutral.css">
+<link rel="stylesheet" href="../../vendor/themes/butter.css">
+<link rel="stylesheet" href="../../vendor/themes/chocolate.css">
+<link rel="stylesheet" href="../../vendor/themes/matcha.css">
+<link rel="stylesheet" href="../../vendor/themes/stone.css">
+<link rel="stylesheet" href="../../vendor/themes/gothic.css">
+<link rel="stylesheet" href="../../vendor/themes/y2k.css">
+<link rel="stylesheet" href="../../shared/frame.css">
+<style>
+  .variants{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
+  .vcell{display:flex;flex-direction:column;gap:8px;align-items:flex-start;
+    background:var(--color-background-card);border:1px solid var(--color-border);
+    border-radius:var(--radius-container);padding:16px}
+  .vcell .cap{font-size:11.5px;color:var(--color-text-secondary);font-family:Consolas,monospace}
+</style>
+</head>
+<body>
+
+<header class="demo-head">
+  <div class="tags">
+    <a class="home" href="../../index.html">← 总览</a>
+    <span class="tag">actions</span>
+    <span class="tag alt">React 19 · Astryx 0.7.11</span>
+    <span class="tag">@astryxdesign/core/Button</span>
+  </div>
+  <h1>按钮 Button</h1>
+  <p>触发操作的控件：表单提交、确认、导航之外的一切「做事」入口。四个变体 + 三档尺寸 + 加载 / 禁用状态，全部走主题 token，随上方主题与明暗切换即时变色。</p>
+  <div class="prefs" data-prefs></div>
+</header>
+
+<div class="stage">
+  <div class="window">
+    <div class="titlebar">
+      <span class="dot" style="background:#ff5f57"></span>
+      <span class="dot" style="background:#febc2e"></span>
+      <span class="dot" style="background:#28c840"></span>
+      <span class="url">meta-design · components/actions/button.html</span>
+    </div>
+    <div class="surface" id="root"></div>
+  </div>
+
+  <aside class="notes">
+    <h2>什么时候用</h2>
+    <ul>
+      <li>页面里<b>最重要的那一个动作用 <code>primary</code></b>，其余用 secondary / ghost 拉开层级。</li>
+      <li>耗时操作（保存、提交）给 <code>isLoading</code>：转圈时保持可聚焦（aria-busy，不是 native disabled），键盘焦点不会丢。</li>
+      <li><code>clickAction</code> 传 async 函数，promise pending 期间自动显示加载态。</li>
+    </ul>
+    <h2>不要</h2>
+    <ul>
+      <li class="never">同一屏放两个 primary —— 主次会被稀释。</li>
+      <li class="never">用按钮做跳转 —— 只是换个页面的话用 Link。</li>
+      <li class="never">破坏性操作不加确认直接挂 destructive。</li>
+    </ul>
+    <h2>关键 props</h2>
+    <ul>
+      <li><code>label</code> <b>必填</b>，同时充当无障碍名</li>
+      <li><code>variant</code> primary / secondary / ghost / destructive</li>
+      <li><code>size</code> sm / md / lg</li>
+      <li><code>isLoading</code> · <code>isDisabled</code> · <code>tooltip</code></li>
+    </ul>
+    <h2>同族</h2>
+    <ul>
+      <li>纯图标按钮 → <code>IconButton</code></li>
+      <li>一组互斥按钮 → <code>ButtonGroup</code></li>
+    </ul>
+  </aside>
+</div>
+
+<script src="../../vendor/astryx.js"></script>
+<script src="../../shared/frame.js"></script>
+<script>
+  const {React, ReactDOM, htm, Astryx, zhCN} = AstryxKit;
+  const html = htm.bind(React.createElement);
+  const {InternationalizationProvider, Button} = Astryx;
+
+  const VARIANTS = ['primary', 'secondary', 'ghost', 'destructive'];
+
+  function Demo() {
+    return html`
+      <${InternationalizationProvider} locale="zh-CN" messages=${{'zh-CN': zhCN}}>
+        <div className="sec">
+          <span className="cap">Variants 变体</span>
+          <div className="variants">
+            ${VARIANTS.map(v => html`
+              <div className="vcell" key=${v}>
+                <${Button} variant=${v} label=${v === 'destructive' ? '删除项目' : '保存更改'} />
+                <span className="cap">variant="${v}"</span>
+              </div>
+            `)}
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">Sizes 尺寸</span>
+          <div className="row">
+            <${Button} size="sm" label="sm 小" />
+            <${Button} size="md" label="md 中" />
+            <${Button} size="lg" label="lg 大" />
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">States 状态</span>
+          <div className="row">
+            <${Button} isLoading label="提交中" />
+            <${Button} isDisabled label="不可用" />
+            <${Button} variant="primary" isLoading label="保存中" />
+            <${Button} variant="ghost" tooltip="带提示的按钮" label="hover 有 tooltip" />
+          </div>
+        </div>
+      <//>
+    `;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(html`<${Demo} />`);
+</script>
+
+</body>
+</html>

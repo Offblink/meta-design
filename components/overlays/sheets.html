@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-astryx-theme="neutral" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>抽屉与底部面板 Drawer · BottomSheet · meta-design</title>
+<script>try{var s=JSON.parse(localStorage.getItem('meta-design')||'null');if(s){if(s.theme)document.documentElement.setAttribute('data-astryx-theme',s.theme);if(s.mode==='light'||s.mode==='dark')document.documentElement.setAttribute('data-theme',s.mode);else document.documentElement.removeAttribute('data-theme');}}catch(e){}</script>
+<link rel="stylesheet" href="../../vendor/fonts.css">
+<link rel="stylesheet" href="../../vendor/reset.css">
+<link rel="stylesheet" href="../../vendor/astryx.css">
+<link rel="stylesheet" href="../../vendor/themes/neutral.css">
+<link rel="stylesheet" href="../../vendor/themes/butter.css">
+<link rel="stylesheet" href="../../vendor/themes/chocolate.css">
+<link rel="stylesheet" href="../../vendor/themes/matcha.css">
+<link rel="stylesheet" href="../../vendor/themes/stone.css">
+<link rel="stylesheet" href="../../vendor/themes/gothic.css">
+<link rel="stylesheet" href="../../vendor/themes/y2k.css">
+<link rel="stylesheet" href="../../shared/frame.css">
+<style>
+  .actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+  .stack{display:flex;flex-direction:column;gap:10px}
+  .kv{display:flex;justify-content:space-between;gap:16px;font-size:13px;
+    background:var(--color-background-card);border:1px solid var(--color-border);
+    border-radius:var(--radius-container);padding:10px 14px}
+  .kv span{color:var(--color-text-secondary)}
+  .kv b{font-weight:600}
+  .hint{font-size:12.5px;color:var(--color-text-secondary);line-height:1.6;margin:0}
+  .sheetrow{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    width:100%;text-align:left;font:inherit;font-size:13.5px;color:var(--color-text-primary);
+    padding:11px 14px;background:var(--color-background-card);
+    border:1px solid var(--color-border);border-radius:var(--radius-container);cursor:pointer}
+  .sheetrow:hover{border-color:var(--color-text-secondary)}
+  .sheetrow.on{border-color:var(--color-text-accent);font-weight:600}
+  .status{font-size:12px;color:var(--color-text-secondary);font-family:Consolas,monospace}
+</style>
+</head>
+<body>
+
+<header class="demo-head">
+  <div class="tags">
+    <a class="home" href="../../index.html">← 总览</a>
+    <span class="tag">overlays</span>
+    <span class="tag alt">React 19 · Astryx 0.7.11</span>
+    <span class="tag">@astryxdesign/core/Drawer · BottomSheet</span>
+  </div>
+  <h1>抽屉与底部面板 Drawer · BottomSheet</h1>
+  <p>贴边浮层：Drawer 从行内轴（左 / 右）滑入，做「点一行看详情」的检查器，列表始终可见；BottomSheet 从块轴（底部）升起，做触屏上的筛选、分享与步骤流。两者都是受控组件，开合状态由 useState 持有，动画与定位由组件自己负责。</p>
+  <div class="prefs" data-prefs></div>
+</header>
+
+<div class="stage">
+  <div class="window">
+    <div class="titlebar">
+      <span class="dot" style="background:#ff5f57"></span>
+      <span class="dot" style="background:#febc2e"></span>
+      <span class="dot" style="background:#28c840"></span>
+      <span class="url">meta-design · components/overlays/sheets.html</span>
+    </div>
+    <div class="surface" id="root"></div>
+  </div>
+
+  <aside class="notes">
+    <h2>什么时候用</h2>
+    <ul>
+      <li>「点一行看详情」用 <code>Drawer</code>：浮在内容之上，背后的列表还在，Escape / 遮罩 / 关闭按钮都能退出。</li>
+      <li>触屏上的筛选、分享、快捷动作用 <code>BottomSheet</code>：内容装不下就分步，每步一个 sheet，一个状态值命名当前步骤。</li>
+      <li>表单放抽屉里用 <code>purpose="form"</code>：Escape 仍可退出，但点遮罩不会丢掉输入。</li>
+    </ul>
+    <h2>不要</h2>
+    <ul>
+      <li class="never">短确认、小表单别开抽屉 —— 用 Dialog / AlertDialog。</li>
+      <li class="never">内容该把页面顶开时别用浮层 —— 那是 docked panel（布局列）的活。</li>
+      <li class="never">BottomSheet 别堆超过两三层；步骤间用「关一个、开一个」替换，而不是层层叠。</li>
+    </ul>
+    <h2>关键 props</h2>
+    <ul>
+      <li>Drawer：<code>isOpen</code> / <code>onOpenChange</code> / <code>label</code> 必填；<code>side</code> start / end（默认 end）；<code>width</code> 默认 400；<code>hasScrim</code> 默认 true</li>
+      <li>DrawerHeader：<code>title</code> 必填；传 <code>onOpenChange</code> 才有关闭按钮（Drawer 自己不画关闭键）</li>
+      <li>BottomSheet：<code>label</code> / <code>children</code> 必填；<code>height</code> hug / capped / tall（默认 capped）；<code>snapPoints</code> 给出可拖停的高度</li>
+    </ul>
+  </aside>
+</div>
+
+<script src="../../vendor/astryx.js"></script>
+<script src="../../shared/frame.js"></script>
+<script>
+  const {React, ReactDOM, htm, Astryx, zhCN} = AstryxKit;
+  const html = htm.bind(React.createElement);
+  const {useState} = React;
+  const {InternationalizationProvider, Button, Drawer, DrawerHeader, BottomSheet, Layout, LayoutFooter} = Astryx;
+
+  const SHARE_ACTIONS = ['复制链接', '生成二维码', '导出为图片'];
+  const FILTERS = ['全部', '近 7 天', '近 30 天'];
+
+  function Demo() {
+    const [drawerOpen, setDrawerOpen] = useState(false);
+    const [drawerSide, setDrawerSide] = useState('end');
+    const [sheet, setSheet] = useState(null);
+    const [filter, setFilter] = useState('全部');
+    const closeSheet = isOpen => { if (!isOpen) setSheet(null); };
+
+    return html`
+      <${InternationalizationProvider} locale="zh-CN" messages=${{'zh-CN': zhCN}}>
+
+        <div className="sec">
+          <span className="cap">Drawer · 侧边详情</span>
+          <div className="row">
+            <${Button} variant="primary" label="打开（右侧 side=end）" onClick=${() => { setDrawerSide('end'); setDrawerOpen(true); }} />
+            <${Button} label="打开（左侧 side=start）" onClick=${() => { setDrawerSide('start'); setDrawerOpen(true); }} />
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">BottomSheet · 底部面板</span>
+          <div className="row">
+            <${Button} label="分享面板 height=hug" onClick=${() => setSheet('share')} />
+            <${Button} label="筛选列表 height=tall · snapPoints=[0.5]" onClick=${() => setSheet('filter')} />
+            <span className="status">${sheet ? 'sheet 已打开：Esc / 遮罩 / 下滑关闭' : ''}</span>
+          </div>
+        </div>
+
+        <${Drawer} isOpen=${drawerOpen} onOpenChange=${setDrawerOpen} side=${drawerSide} label="订单详情" width=${380}>
+          <${Layout}
+            header=${html`<${DrawerHeader} title="订单 #1042" subtitle="已发货 · 3 件商品" onOpenChange=${setDrawerOpen} />`}
+            footer=${html`<${LayoutFooter} hasDivider>
+              <div className="actions">
+                <${Button} variant="ghost" label="关闭" onClick=${() => setDrawerOpen(false)} />
+                <${Button} variant="primary" label="查看物流" onClick=${() => setDrawerOpen(false)} />
+              </div>
+            <//>`}
+          >
+            <div className="stack">
+              <div className="kv"><span>收货人</span><b>周予</b></div>
+              <div className="kv"><span>金额</span><b>¥184.00</b></div>
+              <div className="kv"><span>运单号</span><b>SF1042 8891</b></div>
+              <p className="hint">Escape、点遮罩、header 关闭按钮都会走 onOpenChange(false)；焦点回到打开它的按钮。</p>
+            </div>
+          <//>
+        <//>
+
+        <${BottomSheet} isOpen=${sheet === 'share'} onOpenChange=${closeSheet} label="分享到" height="hug">
+          <div className="stack">
+            <b>分享此画板</b>
+            <div className="row">
+              ${SHARE_ACTIONS.map(a => html`
+                <${Button} key=${a} size="sm" label=${a} onClick=${() => setSheet(null)} />
+              `)}
+              <${Button} size="sm" variant="ghost" label="关闭" onClick=${() => setSheet(null)} />
+            </div>
+            <p className="hint">height="hug"：面板高度贴合内容，最多到视口的 92%。</p>
+          </div>
+        <//>
+
+        <${BottomSheet} isOpen=${sheet === 'filter'} onOpenChange=${closeSheet} label="筛选" height="tall" snapPoints=${[0.5]}>
+          <div className="stack">
+            <b>时间范围</b>
+            ${FILTERS.map(f => html`
+              <button
+                key=${f}
+                className=${'sheetrow' + (filter === f ? ' on' : '')}
+                onClick=${() => setFilter(f)}
+              >${f}</button>
+            `)}
+            <div className="actions">
+              <${Button} variant="ghost" label="重置" onClick=${() => setFilter('全部')} />
+              <${Button} variant="primary" label="应用筛选" onClick=${() => setSheet(null)} />
+            </div>
+            <p className="hint">height="tall" + snapPoints：可以上下拖，在 0.5 视口高度与全高之间停靠。</p>
+          </div>
+        <//>
+
+      <//>
+    `;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(html`<${Demo} />`);
+</script>
+
+</body>
+</html>

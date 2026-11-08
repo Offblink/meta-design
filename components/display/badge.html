@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-astryx-theme="neutral" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>徽标 Badge · meta-design</title>
+<script>try{var s=JSON.parse(localStorage.getItem('meta-design')||'null');if(s){if(s.theme)document.documentElement.setAttribute('data-astryx-theme',s.theme);if(s.mode==='light'||s.mode==='dark')document.documentElement.setAttribute('data-theme',s.mode);else document.documentElement.removeAttribute('data-theme');}}catch(e){}</script>
+<link rel="stylesheet" href="../../vendor/fonts.css">
+<link rel="stylesheet" href="../../vendor/reset.css">
+<link rel="stylesheet" href="../../vendor/astryx.css">
+<link rel="stylesheet" href="../../vendor/themes/neutral.css">
+<link rel="stylesheet" href="../../vendor/themes/butter.css">
+<link rel="stylesheet" href="../../vendor/themes/chocolate.css">
+<link rel="stylesheet" href="../../vendor/themes/matcha.css">
+<link rel="stylesheet" href="../../vendor/themes/stone.css">
+<link rel="stylesheet" href="../../vendor/themes/gothic.css">
+<link rel="stylesheet" href="../../vendor/themes/y2k.css">
+<link rel="stylesheet" href="../../shared/frame.css">
+<style>
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;align-items:start}
+  .vcell{display:flex;flex-direction:column;gap:8px;align-items:flex-start;
+    background:var(--color-background-card);border:1px solid var(--color-border);
+    border-radius:var(--radius-container);padding:14px}
+  .vcell .cap{font-size:11.5px;color:var(--color-text-secondary);font-family:Consolas,monospace}
+  .indrow{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+</style>
+</head>
+<body>
+
+<header class="demo-head">
+  <div class="tags">
+    <a class="home" href="../../index.html">← 总览</a>
+    <span class="tag">display</span>
+    <span class="tag alt">React 19 · Astryx 0.7.11</span>
+    <span class="tag">@astryxdesign/core/Badge</span>
+  </div>
+  <h1>徽标 Badge</h1>
+  <p>一眼可见的状态与分类标识：Badge 打语义状态与分类标签，StatusDot 打在线 / 严重度（必须配文字），Indicator 是选择控件的装饰性指示器，Avatar / AvatarGroup 打人。全部走主题 token，随上方主题与明暗切换即时变色。</p>
+  <div class="prefs" data-prefs></div>
+</header>
+
+<div class="stage">
+  <div class="window">
+    <div class="titlebar">
+      <span class="dot" style="background:#ff5f57"></span>
+      <span class="dot" style="background:#febc2e"></span>
+      <span class="dot" style="background:#28c840"></span>
+      <span class="url">meta-design · components/display/badge.html</span>
+    </div>
+    <div class="surface" id="root"></div>
+  </div>
+
+  <aside class="notes">
+    <h2>什么时候用</h2>
+    <ul>
+      <li>每个状态徽标都在抢注意力 —— 只给<b>需要用户注意或处理</b>的状态上 success / warning / error。</li>
+      <li>颜色变体（blue、purple、teal…）做<b>分类标签</b>：团队名、内容类型、优先级，一两个词就够。</li>
+      <li>StatusDot 必须配可见文字；<code>label</code> 播报给读屏，颜色永远不单独承载含义。</li>
+    </ul>
+    <h2>不要</h2>
+    <ul>
+      <li class="never">给每行都挂绿色「运行中」—— 满屏同款徽标等于没有信息，只剩噪音。</li>
+      <li class="never">用徽标承载元数据（时长、计数、日期）—— 那是 <code>Text type="supporting"</code> 的活。</li>
+      <li class="never">让徽标可点击 —— 它是只读指示器，要操作用 Button / Link。</li>
+    </ul>
+    <h2>关键 props</h2>
+    <ul>
+      <li><code>Badge</code>：<code>label</code> <b>必填</b> · <code>variant</code> 语义 neutral / info / success / warning / error + 9 个颜色变体</li>
+      <li><code>StatusDot</code>：<code>variant</code> + <code>label</code> <b>必填</b> · <code>isPulsing</code> · <code>tooltip</code></li>
+      <li><code>CheckboxIndicator</code> / <code>RadioIndicator</code>：<code>state</code> <b>必填</b>，装饰性（aria-hidden），input 与键盘归 CheckboxInput / RadioList</li>
+      <li><code>Avatar</code>：<code>name</code>（首字母 + alt）· <code>size</code> · <code>shape</code> · <code>status</code> 槽放 AvatarStatusDot · <code>AvatarGroupOverflow</code> 的 <code>count</code> <b>必填</b></li>
+    </ul>
+  </aside>
+</div>
+
+<script src="../../vendor/astryx.js"></script>
+<script src="../../shared/frame.js"></script>
+<script>
+  const {React, ReactDOM, htm, Astryx, zhCN} = AstryxKit;
+  const html = htm.bind(React.createElement);
+  const {InternationalizationProvider, Badge, StatusDot, CheckboxIndicator, RadioIndicator,
+    CheckIndicator, Avatar, AvatarGroup, AvatarGroupOverflow, AvatarStatusDot, Text} = Astryx;
+
+  const SEMANTIC = [
+    {v: 'neutral', label: '中性'},
+    {v: 'info', label: '信息'},
+    {v: 'success', label: '成功'},
+    {v: 'warning', label: '警告'},
+    {v: 'error', label: '失败'},
+  ];
+
+  const COLORS = [
+    {v: 'blue', label: '设计'},
+    {v: 'cyan', label: '工程'},
+    {v: 'green', label: '研究'},
+    {v: 'orange', label: '市场'},
+    {v: 'pink', label: '视频'},
+    {v: 'purple', label: '草稿'},
+    {v: 'red', label: '紧急'},
+    {v: 'teal', label: '实验'},
+    {v: 'yellow', label: '归档'},
+  ];
+
+  const DOTS = [
+    {v: 'success', label: '运行中'},
+    {v: 'warning', label: '需关注'},
+    {v: 'error', label: '已失败'},
+    {v: 'neutral', label: '已暂停'},
+  ];
+
+  function Demo() {
+    return html`
+      <${InternationalizationProvider} locale="zh-CN" messages=${{'zh-CN': zhCN}}>
+        <div className="sec">
+          <span className="cap">Semantic 语义状态（只给要人注意的状态用）</span>
+          <div className="cards">
+            ${SEMANTIC.map(b => html`
+              <div className="vcell" key=${b.v}>
+                <${Badge} variant=${b.v} label=${b.label} />
+                <span className="cap">variant="${b.v}"</span>
+              </div>
+            `)}
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">Colors 分类标签（9 色）</span>
+          <div className="cards">
+            ${COLORS.map(b => html`
+              <div className="vcell" key=${b.v}>
+                <${Badge} variant=${b.v} label=${b.label} />
+                <span className="cap">variant="${b.v}"</span>
+              </div>
+            `)}
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">StatusDot 状态点（颜色必配文字）</span>
+          <div className="row">
+            ${DOTS.map(d => html`
+              <span className="row" key=${d.v} style=${{gap: '6px'}}>
+                <${StatusDot} variant=${d.v} label=${d.label} />
+                <${Text} type="body">${d.label}<//>
+              </span>
+            `)}
+            <span className="row" style=${{gap: '6px'}}>
+              <${StatusDot} variant="accent" label="实时" isPulsing tooltip="数据每 5 秒刷新" />
+              <${Text} type="body">实时（脉冲）<//>
+            </span>
+          </div>
+          <${Text} type="supporting">isPulsing 只留给需要立即关注的状态，并尊重 prefers-reduced-motion。<//>
+        </div>
+
+        <div className="sec">
+          <span className="cap">Indicator 选择指示器（装饰性）</span>
+          <div className="indrow" aria-hidden="true">
+            <${CheckboxIndicator} state="unchecked" />
+            <${CheckboxIndicator} state="checked" />
+            <${CheckboxIndicator} state="indeterminate" />
+            <${CheckboxIndicator} state="checked" size="sm" />
+            <${CheckboxIndicator} state="checked" isDisabled />
+            <${RadioIndicator} state="unchecked" />
+            <${RadioIndicator} state="checked" />
+            <${CheckIndicator} state="checked" />
+          </div>
+          <${Text} type="supporting">Indicator 只画形状：真实的 input、role、焦点与键盘行为归 CheckboxInput / RadioList 所有，所以单独展示时整行 aria-hidden。<//>
+        </div>
+
+        <div className="sec">
+          <span className="cap">Avatar 尺寸 · 形状 · 状态点</span>
+          <div className="row">
+            <${Avatar} name="周予" size="xsm" />
+            <${Avatar} name="周予" size="sm" />
+            <${Avatar} name="周予" size="md" />
+            <${Avatar} name="周予" size="lg" />
+            <${Avatar} name="林澈" shape="circle" />
+            <${Avatar} name="林澈" shape="rounded" />
+            <${Avatar} name="林澈" shape="square" />
+            <${Avatar} name="陈砚" status=${html`<${AvatarStatusDot} variant="success" label="在线" />`} />
+            <${Avatar} name="苏晚" status=${html`<${AvatarStatusDot} variant="neutral" label="离开" />`} />
+            <${Avatar} name="顾川" status=${html`<${AvatarStatusDot} variant="error" label="请勿打扰" />`} />
+          </div>
+          <${Text} type="supporting">没有图片就画 name 的首字母；AvatarStatusDot 会把状态拼进无障碍名（如「陈砚, 在线」）。<//>
+        </div>
+
+        <div className="sec">
+          <span className="cap">AvatarGroup 头像组（+N 溢出）</span>
+          <div className="row">
+            <${AvatarGroup} size="md">
+              <${Avatar} name="周予" />
+              <${Avatar} name="林澈" />
+              <${Avatar} name="陈砚" />
+              <${AvatarGroupOverflow} count=${4} />
+            <//>
+            <${AvatarGroup} size="lg" shape="rounded">
+              <${Avatar} name="苏晚" />
+              <${Avatar} name="顾川" />
+              <${Avatar} name="沈眠" />
+            <//>
+          </div>
+          <${Text} type="supporting">组自己切片：只放想显示的 3–5 个，溢出的用 AvatarGroupOverflow 报真实 count。<//>
+        </div>
+      <//>
+    `;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(html`<${Demo} />`);
+</script>
+
+</body>
+</html>

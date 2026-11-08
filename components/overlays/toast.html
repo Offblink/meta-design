@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-astryx-theme="neutral" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>轻提示 Toast · meta-design</title>
+<script>try{var s=JSON.parse(localStorage.getItem('meta-design')||'null');if(s){if(s.theme)document.documentElement.setAttribute('data-astryx-theme',s.theme);if(s.mode==='light'||s.mode==='dark')document.documentElement.setAttribute('data-theme',s.mode);else document.documentElement.removeAttribute('data-theme');}}catch(e){}</script>
+<link rel="stylesheet" href="../../vendor/fonts.css">
+<link rel="stylesheet" href="../../vendor/reset.css">
+<link rel="stylesheet" href="../../vendor/astryx.css">
+<link rel="stylesheet" href="../../vendor/themes/neutral.css">
+<link rel="stylesheet" href="../../vendor/themes/butter.css">
+<link rel="stylesheet" href="../../vendor/themes/chocolate.css">
+<link rel="stylesheet" href="../../vendor/themes/matcha.css">
+<link rel="stylesheet" href="../../vendor/themes/stone.css">
+<link rel="stylesheet" href="../../vendor/themes/gothic.css">
+<link rel="stylesheet" href="../../vendor/themes/y2k.css">
+<link rel="stylesheet" href="../../shared/frame.css">
+<style>
+  .hint{font-size:12.5px;color:var(--color-text-secondary);line-height:1.6;margin:0}
+  .status{font-size:12px;color:var(--color-text-secondary);font-family:Consolas,monospace}
+</style>
+</head>
+<body>
+
+<header class="demo-head">
+  <div class="tags">
+    <a class="home" href="../../index.html">← 总览</a>
+    <span class="tag">overlays</span>
+    <span class="tag alt">React 19 · Astryx 0.7.11</span>
+    <span class="tag">@astryxdesign/core/Toast</span>
+  </div>
+  <h1>轻提示 Toast</h1>
+  <p>非阻塞的短暂反馈：保存、复制、同步进度。触发机制是 <code>useToast()</code> 钩子 —— 在 LayerProvider 内的子组件里调用，返回 show 函数；viewport 由 Provider 挂载，默认堆在视口右下角，因此提示会出现在浏览器视口边缘，而不是窗口壳里。</p>
+  <div class="prefs" data-prefs></div>
+</header>
+
+<div class="stage">
+  <div class="window">
+    <div class="titlebar">
+      <span class="dot" style="background:#ff5f57"></span>
+      <span class="dot" style="background:#febc2e"></span>
+      <span class="dot" style="background:#28c840"></span>
+      <span class="url">meta-design · components/overlays/toast.html</span>
+    </div>
+    <div class="surface" id="root"></div>
+  </div>
+
+  <aside class="notes">
+    <h2>什么时候用</h2>
+    <ul>
+      <li>「已保存 / 已复制 / 已发送」这类不需要回应的结果反馈：一句话 + 自动消失（info 默认 5 秒）。</li>
+      <li>可撤销的操作在 <code>endContent</code> 放一个小按钮（撤销）；必须一直可点时设 <code>isAutoHide: false</code>。</li>
+      <li>重复触发的动作给 <code>uniqueID</code>：同一时刻只保留一条，重复点击原地覆盖而不是排队刷屏。</li>
+    </ul>
+    <h2>不要</h2>
+    <ul>
+      <li class="never">阻塞式的关键错误别用 Toast —— 用 AlertDialog 或行内 Banner，用户必须看到。</li>
+      <li class="never">别塞长文 / 多行内容：5 秒读不完。</li>
+      <li class="never">表单校验错误别弹 Toast —— 错误要贴在字段旁边。</li>
+    </ul>
+    <h2>关键 props</h2>
+    <ul>
+      <li><code>useToast()</code> 返回 show(options)，show 返回 dismiss 函数；必须在 LayerProvider 的子组件里调用（同层调用会拿不到 provider）</li>
+      <li>show 的选项：<code>body</code> 必填、<code>type</code> info / error（error 默认不自动消失）、<code>autoHideDuration</code> 默认 5000、<code>endContent</code>、<code>uniqueID</code> + <code>collisionBehavior</code></li>
+      <li>LayerProvider：<code>toast</code> 配置 viewport（position 默认 bottomEnd、maxVisible 默认 5）；没有它 useToast 会自建 fallback viewport 并在控制台警告</li>
+    </ul>
+  </aside>
+</div>
+
+<script src="../../vendor/astryx.js"></script>
+<script src="../../shared/frame.js"></script>
+<script>
+  const {React, ReactDOM, htm, Astryx, zhCN} = AstryxKit;
+  const html = htm.bind(React.createElement);
+  const {useState} = React;
+  const {InternationalizationProvider, Button, LayerProvider, useToast} = Astryx;
+
+  function ToastDemo() {
+    const showToast = useToast();
+    const [count, setCount] = useState(0);
+
+    const showInfo = () => showToast({body: '更改已保存'});
+    const showError = () => showToast({body: '上传失败：网络连接中断', type: 'error'});
+    const showShort = () => showToast({body: '已复制到剪贴板', autoHideDuration: 1500});
+    const showDedup = () => {
+      setCount(c => c + 1);
+      showToast({body: '正在同步 12 个组件…', uniqueID: 'sync-toast', autoHideDuration: 3000});
+    };
+    const showUndo = () => {
+      const dismiss = showToast({
+        body: '草稿已移入回收站',
+        endContent: html`<${Button} size="sm" variant="ghost" label="撤销" onClick=${() => dismiss()} />`,
+      });
+    };
+
+    return html`
+      <div className="sec">
+        <span className="cap">基本反馈</span>
+        <div className="row">
+          <${Button} variant="primary" label="保存成功（info）" onClick=${showInfo} />
+          <${Button} variant="destructive" label="上传失败（error · 常驻）" onClick=${showError} />
+          <${Button} variant="ghost" label="短提示 1.5s" onClick=${showShort} />
+        </div>
+      </div>
+
+      <div className="sec">
+        <span className="cap">操作型 · 撤销与去重</span>
+        <div className="row">
+          <${Button} label="移入回收站（带撤销）" onClick=${showUndo} />
+          <${Button} label="同步（uniqueID 去重）" onClick=${showDedup} />
+          <span className="status">点击同步 ${count} 次，视口里始终只有一条</span>
+        </div>
+        <p className="hint">撤销按钮在 endContent 里，点了就调用 show 返回的 dismiss；若撤销必须一直可点，把 isAutoHide 设为 false。</p>
+      </div>
+    `;
+  }
+
+  function Demo() {
+    return html`
+      <${InternationalizationProvider} locale="zh-CN" messages=${{'zh-CN': zhCN}}>
+        <${LayerProvider} toast=${{position: 'bottomEnd'}}>
+          <${ToastDemo} />
+        <//>
+      <//>
+    `;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(html`<${Demo} />`);
+</script>
+
+</body>
+</html>

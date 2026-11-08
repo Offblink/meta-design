@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-astryx-theme="neutral" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>数值选择 Slider · NumberInput · SegmentedControl · meta-design</title>
+<script>try{var s=JSON.parse(localStorage.getItem('meta-design')||'null');if(s){if(s.theme)document.documentElement.setAttribute('data-astryx-theme',s.theme);if(s.mode==='light'||s.mode==='dark')document.documentElement.setAttribute('data-theme',s.mode);else document.documentElement.removeAttribute('data-theme');}}catch(e){}</script>
+<link rel="stylesheet" href="../../vendor/fonts.css">
+<link rel="stylesheet" href="../../vendor/reset.css">
+<link rel="stylesheet" href="../../vendor/astryx.css">
+<link rel="stylesheet" href="../../vendor/themes/neutral.css">
+<link rel="stylesheet" href="../../vendor/themes/butter.css">
+<link rel="stylesheet" href="../../vendor/themes/chocolate.css">
+<link rel="stylesheet" href="../../vendor/themes/matcha.css">
+<link rel="stylesheet" href="../../vendor/themes/stone.css">
+<link rel="stylesheet" href="../../vendor/themes/gothic.css">
+<link rel="stylesheet" href="../../vendor/themes/y2k.css">
+<link rel="stylesheet" href="../../shared/frame.css">
+<style>
+  .cells{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:14px}
+  .cell{display:flex;flex-direction:column;gap:10px;align-content:start;
+    background:var(--color-background-card);border:1px solid var(--color-border);
+    border-radius:var(--radius-container);padding:16px}
+  .cell .cap{font-size:11.5px;color:var(--color-text-secondary);font-family:Consolas,monospace}
+  .readout{font-size:13px;color:var(--color-text-secondary)}
+  .readout b{color:var(--color-text-primary)}
+</style>
+</head>
+<body>
+
+<header class="demo-head">
+  <div class="tags">
+    <a class="home" href="../../index.html">← 总览</a>
+    <span class="tag">forms</span>
+    <span class="tag alt">React 19 · Astryx 0.7.11</span>
+    <span class="tag">@astryxdesign/core/Slider</span>
+    <span class="tag">@astryxdesign/core/NumberInput</span>
+    <span class="tag">@astryxdesign/core/SegmentedControl</span>
+  </div>
+  <h1>数值选择 Slider · NumberInput · SegmentedControl</h1>
+  <p>「数字往哪儿走」的三种答法：<code>Slider</code> 探索连续区间（音量、价格带），<code>NumberInput</code> 精确输入带 min/max/step 与单位，<code>SegmentedControl</code> 在少数几个互斥档位 / 视图之间切换。全部受控，滑块和分段都能真的拖、真的点。</p>
+  <div class="prefs" data-prefs></div>
+</header>
+
+<div class="stage">
+  <div class="window">
+    <div class="titlebar">
+      <span class="dot" style="background:#ff5f57"></span>
+      <span class="dot" style="background:#febc2e"></span>
+      <span class="dot" style="background:#28c840"></span>
+      <span class="url">meta-design · components/forms/numbers.html</span>
+    </div>
+    <div class="surface" id="root"></div>
+  </div>
+
+  <aside class="notes">
+    <h2>什么时候用</h2>
+    <ul>
+      <li><b>连续区间用 <code>Slider</code></b>：始终给 label（可 <code>isLabelHidden</code>），用 <code>formatValue</code> 显示带单位的值（"75%"、"¥50"），刻度用 <code>marks</code>；需要精确数字时旁边配一个 <code>NumberInput</code>。</li>
+      <li><b>精确数值用 <code>NumberInput</code></b>：设 <code>min</code> / <code>max</code> / <code>step</code> 引导合法值，用 <code>units</code> 标出 "%"、"GB"，粘贴 "1,234" 会在失焦时按 locale 解析成 1234。</li>
+      <li><b>2–5 个互斥档位 / 视图用 <code>SegmentedControl</code></b>：选项全部可见，受控 <code>value</code> + <code>onChange</code>（存 <code>useState</code>），并给一个 <code>label</code> 作无障碍名。</li>
+    </ul>
+    <h2>不要</h2>
+    <ul>
+      <li class="never">拿 <code>Slider</code> 当精确输入，或 <code>step</code> 大到只有几个位置 —— 后者该用 SegmentedControl / 单选。</li>
+      <li class="never">用 <code>SegmentedControl</code> 做页面导航（那是 TabList）或简单开关（那是 ToggleButton）。</li>
+      <li class="never">用 <code>NumberInput</code> 装碰巧含数字的自由文本（用 TextInput），或同一字段同时 <code>isOptional</code> 与 <code>isRequired</code>。</li>
+    </ul>
+    <h2>关键 props</h2>
+    <ul>
+      <li><code>Slider</code>：<code>label</code> + <code>value</code> 必填 · <code>min/max/step</code> · <code>marks</code> · <code>formatValue</code> · <code>valueDisplay</code> · 区间传 <code>[min, max]</code> · <code>disabledMessage</code></li>
+      <li><code>NumberInput</code>：<code>label</code> + <code>value</code> + <code>onChange</code> 必填 · <code>min/max/step</code> · <code>units</code> · <code>hasNumberSteppers</code> · <code>hasClear</code>（此时 onChange 会收到 null）· <code>status</code></li>
+      <li><code>SegmentedControl</code>：<code>label</code> + <code>value</code> + <code>onChange</code> + <code>children</code> 必填 · <code>size</code> · <code>layout</code> · <code>disabledMessage</code></li>
+      <li><code>SegmentedControlItem</code>：<code>value</code> + <code>label</code> 必填 · <code>isDisabled</code></li>
+    </ul>
+  </aside>
+</div>
+
+<script src="../../vendor/astryx.js"></script>
+<script src="../../shared/frame.js"></script>
+<script>
+  const {React, ReactDOM, htm, Astryx, zhCN} = AstryxKit;
+  const html = htm.bind(React.createElement);
+  const {InternationalizationProvider, Slider, NumberInput, SegmentedControl, SegmentedControlItem} = Astryx;
+
+  function Demo() {
+    // Slider
+    const [volume, setVolume] = React.useState(40);
+    const [budget, setBudget] = React.useState([800, 2600]);
+
+    // NumberInput
+    const [count, setCount] = React.useState(3);
+    const [discount, setDiscount] = React.useState(15);
+    const [quota, setQuota] = React.useState(8000);
+
+    // SegmentedControl
+    const [view, setView] = React.useState('grid');
+    const [smSize, setSmSize] = React.useState('list');
+    const [lgSize, setLgSize] = React.useState('list');
+    const [fillView, setFillView] = React.useState('day');
+    const [syncMode, setSyncMode] = React.useState('auto');
+
+    return html`
+      <${InternationalizationProvider} locale="zh-CN" messages=${{'zh-CN': zhCN}}>
+        <div className="sec">
+          <span className="cap">Slider 单值</span>
+          <div className="row">
+            <${Slider}
+              label="音量"
+              value=${volume}
+              onChange=${v => setVolume(v)}
+              min=${0}
+              max=${100}
+              step=${5}
+              formatValue=${v => v + '%'}
+              valueDisplay="text"
+              marks=${[{value: 0, label: '静音'}, {value: 50, label: '中'}, {value: 100, label: '最大'}]}
+              description="拖动调节，步长 5；右侧文本显示当前值。"
+              status=${volume > 85 ? {type: 'warning', message: '音量过高可能损伤听力'} : undefined}
+              width=${420}
+            />
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">Slider 区间 [min, max]</span>
+          <div className="row">
+            <${Slider}
+              label="价格区间"
+              value=${budget}
+              onChange=${v => setBudget(v)}
+              min=${0}
+              max=${5000}
+              step=${100}
+              minStepsBetweenThumbs=${1}
+              formatValue=${v => '¥' + v}
+              description="两个滑块之间至少空一格；tooltip 显示当前两端取值。"
+              width=${460}
+            />
+            <${Slider}
+              label="已锁定的缩放"
+              value=${30}
+              onChange=${() => {}}
+              min=${0}
+              max=${100}
+              isDisabled
+              disabledMessage="跟随窗口尺寸，暂不能手动调整"
+              width=${320}
+            />
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">NumberInput 数值输入</span>
+          <div className="cells">
+            <div className="cell">
+              <${NumberInput}
+                label="购买数量"
+                value=${count}
+                onChange=${v => setCount(v)}
+                min=${1}
+                max=${99}
+                step=${1}
+                units="件"
+                hasNumberSteppers
+                description="min/max/step + 步进按钮。"
+              />
+              <span className="cap">units + hasNumberSteppers</span>
+            </div>
+            <div className="cell">
+              <${NumberInput}
+                label="折扣"
+                value=${discount}
+                onChange=${v => setDiscount(v)}
+                min=${0}
+                max=${100}
+                step=${1}
+                units="%"
+                isIntegerOnly
+                status=${discount > 50 ? {type: 'error', message: '折扣不能超过 50%'} : undefined}
+                statusVariant="detached"
+                description="整数输入，超过 50% 立刻报错。"
+              />
+              <span className="cap">isIntegerOnly + status 动态校验</span>
+            </div>
+            <div className="cell">
+              <${NumberInput}
+                label="月度额度"
+                value=${quota}
+                onChange=${v => setQuota(v)}
+                min=${0}
+                step=${500}
+                hasClear
+                description="hasClear：清空时 onChange 收到 null。"
+              />
+              <span className="cap">hasClear（可清空）</span>
+            </div>
+            <div className="cell">
+              <${NumberInput}
+                label="并发上限"
+                value=${16}
+                onChange=${() => {}}
+                isDisabled
+                disabledMessage="当前套餐固定为 16，升级后可调"
+                description="禁用原因挂在字段上。"
+              />
+              <span className="cap">isDisabled + disabledMessage</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">SegmentedControl 互斥视图</span>
+          <div className="row">
+            <${SegmentedControl} label="视图" value=${view} onChange=${v => setView(v)}>
+              <${SegmentedControlItem} value="list" label="列表" />
+              <${SegmentedControlItem} value="grid" label="网格" />
+              <${SegmentedControlItem} value="board" label="看板" />
+            <//>
+            <span className="readout">当前选中：<b>${view}</b>（受控 value，来自 useState）</span>
+          </div>
+        </div>
+
+        <div className="sec">
+          <span className="cap">Sizes 尺寸 · layout=fill · 禁用</span>
+          <div className="cells">
+            <div className="cell">
+              <${SegmentedControl} size="sm" label="小号分段" value=${smSize} onChange=${v => setSmSize(v)}>
+                <${SegmentedControlItem} value="list" label="列表" />
+                <${SegmentedControlItem} value="grid" label="网格" />
+              <//>
+              <span className="cap">size="sm"</span>
+            </div>
+            <div className="cell">
+              <${SegmentedControl} size="lg" label="大号分段" value=${lgSize} onChange=${v => setLgSize(v)}>
+                <${SegmentedControlItem} value="list" label="列表" />
+                <${SegmentedControlItem} value="grid" label="网格" />
+              <//>
+              <span className="cap">size="lg"</span>
+            </div>
+            <div className="cell">
+              <${SegmentedControl} layout="fill" label="统计周期" value=${fillView} onChange=${v => setFillView(v)}>
+                <${SegmentedControlItem} value="day" label="按天" />
+                <${SegmentedControlItem} value="week" label="按周" />
+                <${SegmentedControlItem} value="month" label="按月" />
+              <//>
+              <span className="cap">layout="fill"（分段等分容器）</span>
+            </div>
+            <div className="cell">
+              <${SegmentedControl} label="同步方式" value=${syncMode} onChange=${v => setSyncMode(v)} isDisabled disabledMessage="离线状态下无法修改同步方式">
+                <${SegmentedControlItem} value="auto" label="自动" />
+                <${SegmentedControlItem} value="manual" label="手动" />
+                <${SegmentedControlItem} value="off" label="关闭" />
+              <//>
+              <span className="cap">isDisabled + disabledMessage</span>
+            </div>
+            <div className="cell">
+              <${SegmentedControl} label="导出格式" value="csv" onChange=${() => {}}>
+                <${SegmentedControlItem} value="csv" label="CSV" />
+                <${SegmentedControlItem} value="xlsx" label="XLSX" />
+                <${SegmentedControlItem} value="pdf" label="PDF（内测）" isDisabled />
+              <//>
+              <span className="cap">单项 isDisabled</span>
+            </div>
+          </div>
+        </div>
+      <//>
+    `;
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(html`<${Demo} />`);
+</script>
+
+</body>
+</html>
